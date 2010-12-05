@@ -7,20 +7,33 @@
 
 %union { float fval; char * cval; }
 %token <fval> number
-%type  <fval> FIN Expression Result
+%token <cval> String
+%type  <fval> Expression Result FIN Print Printable
 
-%token equals beg end
+%token equals beg end print println EOL Comma ID
 %left  plus minus
 %left  times over
 %left  neg
-%right power expo
+%right power
 
 %start FIN
 
 %%
 FIN : Result
     | FIN Result
+    | Print
     ;
+
+Print : print beg Printable end EOL           { $$ = 0; }
+      | println beg Printable end EOL         { $$ = printf("\n"); }
+      | println beg end EOL                   { $$ = printf("\n"); }
+      ;
+
+Printable : Expression              { $$ = printf("%.3f\n", $1); }
+          | String                  { $$ = printf("%s", $1); }
+          | Printable Comma String { $$ = printf("%s", $3); }
+          | Printable Comma Expression { $$ = printf("%.3f\n", $3); }
+          ;
 
 Result : Expression equals         { printf("Résultat : %.3f\n", $1); }
      ;
@@ -33,7 +46,6 @@ Expression : number                      { $$ = $1; }
            | beg Expression end          { $$ = $2; }
            | minus Expression %prec neg  { $$ = -$2; }
            | Expression power Expression { $$ = pow($1, $3); }
-           | Expression expo Expression  { $$ = $1 * pow(10, $3); }
            ;
 %%
 
