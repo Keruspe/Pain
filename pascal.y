@@ -29,10 +29,10 @@ Print : print beg Printable end EOL           { $$ = 0; }
       | println beg end EOL                   { $$ = printf("\n"); }
       ;
 
-Printable : Expression              { $$ = printf("%.3f\n", $1); }
+Printable : Expression              { $$ = printf("%.3f", $1); }
           | String                  { $$ = printf("%s", $1); }
           | Printable Comma String { $$ = printf("%s", $3); }
-          | Printable Comma Expression { $$ = printf("%.3f\n", $3); }
+          | Printable Comma Expression { $$ = printf("%.3f", $3); }
           ;
 
 Result : Expression equals         { printf("Résultat : %.3f\n", $1); }
