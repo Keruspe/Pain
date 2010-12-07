@@ -1,5 +1,6 @@
 %{
     #include <stdio.h>
+    #include <stdlib.h>
     #include <math.h>
     void yyerror(char* error);
     extern int yylex (void);
@@ -50,8 +51,6 @@ Expression : number                      { $$ = $1; }
            | Expression power Expression { $$ = pow($1, $3); }
            ;
 %%
-
-#include "lex.yy.c"
 
 void yyerror(char* error) {
     fprintf(stderr, "Erreur : %s\n", error);

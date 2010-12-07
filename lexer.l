@@ -3,6 +3,10 @@ DIGIT [0-9]
 NUMBER {DIGIT}+\.?{DIGIT}*
 ID [a-zA-Z_][a-zA-Z0-9_-]*
 STRING \"[^\"]*\"
+%{
+	#include "y.tab.h"
+%}
+
 %%
 "writeln" return(println);
 "write" return(print);
