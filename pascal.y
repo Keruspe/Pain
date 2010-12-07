@@ -19,11 +19,14 @@
 %start stmts
 
 %%
-stmts : stmt EOL
-      | stmt EOL stmts
+stmts : stmt
+      | stmt stmts
       ;
 
-stmt : Print
+stmt : Print EOL
+     | IF Expression THEN stmt { $$ = $4; }
+     | IF Expression THEN stmt ELSE stmt { $$ = $4; }
+     | BEGI stmts END { $$ = $2; }
      ;
 
 Print : print beg Printable end           { $$ = 0; }
