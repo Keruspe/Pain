@@ -4,9 +4,15 @@ NUMBER {DIGIT}+\.?{DIGIT}*
 ID [a-zA-Z_][a-zA-Z0-9_-]*
 STRING \"[^\"]*\"
 %%
-writeln return(println);
-write return(print);
-"," { return(Comma); }
+"writeln" return(println);
+"write" return(print);
+"if" return(IF);
+"then" return(THEN);
+"else" return(ELSE);
+"begin" return(BEGI);
+"end" return(END);
+"end." return(THE_END);
+"," return(Comma);
 ";" return(EOL);
 "+" return(plus);
 "-" return(minus);
