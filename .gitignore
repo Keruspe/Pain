@@ -1,4 +1,4 @@
-y.tab.c
+parser.c
 y.tab.h
-lex.yy.c
+scanner.c
 pain

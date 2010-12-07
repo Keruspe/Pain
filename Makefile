@@ -1,12 +1,29 @@
-all: bison
-	@echo Compiling pain
-	@gcc -Wall -Wextra -std=gnu99 -pedantic -O3 -march=native y.tab.c lex.yy.c -lfl -lm -o pain -Wl,--as-needed -Wl,-O2
-flex:
-	@echo Flexing
-	@flex lexer.l
-bison: flex
-	@echo Bisoning
-	@bison -ydt parser.y
+sources = parser.c scanner.c
+objects = $(sources:.c=.o)
+bin     = pain
+
+CC      = gcc
+RM      = rm -f
+LEX     = flex
+YACC    = bison -y
+
+D_CFLAGS  = -g -ggdb3 -Wall -Wextra -pedantic -std=gnu99 -O3 -march=native
+D_LDFLAGS = -Wl,-O3 -Wl,--as-needed
+D_YFLAGS  = -d
+
+CFLAGS  := $(D_CFLAGS) $(CFLAGS)
+LDFLAGS := $(D_LDFLAGS) $(LDFLAGS)
+YFLAGS  := $(D_YFLAGS) $(YFLAGS)
+
+
+all: $(bin)
+
+$(bin): $(objects)
+	$(LINK.c) $^ $(LOADLIBES) $(LDLIBS) -o $@ -lm -lfl
+
+parse.o: parser.y
+
+scan.o: scanner.l parser.c y.tab.h
+
 clean:
-	@echo Cleaning files
-	@rm -f lex.yy.c y.tab.c y.tab.h pain
+	$(RM) $(sources) $(objects) $(bin) y.tab.h
