@@ -13,9 +13,9 @@ STRING \"[^\"]*\"
 "if" return(IF);
 "then" return(THEN);
 "else" return(ELSE);
-"begin" return(BEGI);
-"end" return(END);
-"end." return(THE_END);
+"Begin" return(BEGI);
+"End" return(END);
+"End." return(THE_END);
 "," return(Comma);
 ";" return(EOL);
 "+" return(plus);

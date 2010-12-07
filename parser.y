@@ -9,7 +9,7 @@
 %union { float fval; char * cval; }
 %token <fval> number
 %token <cval> String
-%type  <fval> Expression Print Printable stmt stmts
+%type  <fval> Expression Print Printable stmt stmts OUT
 
 %token equals beg end print println EOL Comma ID IF THEN ELSE BEGI END THE_END
 %left  plus minus
@@ -17,9 +17,13 @@
 %left  neg
 %right power
 
-%start stmts
+%start OUT
 
 %%
+OUT   : BEGI stmts THE_END {exit(0);}
+      | BEGI THE_END {exit(0);}
+      ;
+
 stmts : stmt
       | stmt stmts
       ;
