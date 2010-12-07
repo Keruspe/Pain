@@ -4,6 +4,30 @@
     #include <math.h>
     void yyerror(char* error);
     extern int yylex (void);
+
+    typedef enum {
+	TRUE,
+	FALSE
+    } Bool;
+
+    typedef enum {
+	PRINT,
+	AFFECT,
+	NONE
+    } Action;
+
+    typedef struct _Instr Instr;
+    struct _Instr {
+	Instr * next;
+	Action action;
+	const char * format;
+	char * svalue;
+	float value;
+    };
+
+    Instr start = {NULL, NONE, NULL, NULL, 0};
+    Instr * current = &start;
+    Instr * new;
 %}
 
 %union { float fval; char * cval; }
@@ -20,7 +44,23 @@
 %start OUT
 
 %%
-OUT   : BEGI stmts THE_END {exit(0);}
+OUT   : BEGI stmts THE_END {
+		Instr * toFree;
+		current = start.next;
+		while (current != NULL) {
+			toFree = current;
+			if (current->action == PRINT) {
+				if (current->svalue == NULL)
+					printf(current->format, current->value);
+				else
+					printf(current->format, current->svalue);
+				printf("\n");
+			}
+			current = current->next;
+			free(toFree);
+		}
+		exit(0);
+	   }
       | BEGI THE_END {exit(0);}
       ;
 
@@ -39,10 +79,48 @@ Print : print beg Printable end           { $$ = 0; }
       | println beg end                   { $$ = printf("\n"); }
       ;
 
-Printable : Expression              { $$ = printf("%.3f", $1); }
-          | String                  { $$ = printf("%s", $1); }
-          | Printable Comma String { $$ = printf("%s", $3); }
-          | Printable Comma Expression { $$ = printf("%.3f", $3); }
+Printable : Expression              { 
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->format = "%.3f";
+			new->svalue = NULL;
+			new->value = $1;
+			new->next = NULL;
+			current->next = new;
+			current = new;
+			$$ = 0;
+		}
+          | String                  { 
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->format = "%s";
+			new->svalue = $1;
+			new->next = NULL;
+			current->next = new;
+			current = new;
+			$$ = 0;
+		}
+          | Printable Comma String { 
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->format = "%s";
+			new->svalue = $3;
+			new->next = NULL;
+			current->next = new;
+			current = new;
+			$$ = 0;
+		}
+          | Printable Comma Expression { 
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->format = "%.3f";
+			new->svalue = NULL;
+			new->value = $3;
+			new->next = NULL;
+			current->next = new;
+			current = new;
+			$$ = 0;
+		}
           ;
 
 Expression : number                      { $$ = $1; }
