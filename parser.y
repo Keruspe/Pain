@@ -47,10 +47,26 @@
     Var * vars = NULL;
     int vars_number = 0;
 
+    int varNameExists(char * name)
+    {
+	int i;
+	for (i = 0 ; i < var_names_number ; ++i)
+	{
+		if (strcmp(name, var_names[i]) == 0)
+			return 1;
+	}
+	for (i = 0 ;  i < vars_number ; ++i)
+	{
+		if (strcmp(name, vars[i].name) == 0)
+			return 1;
+	}
+	return 0;
+    }
+
     Var * getVar(char * id) {
 	int i;
 	Var * var;
-	for (i=9 ; i < vars_number ; ++i)
+	for (i=0 ; i < vars_number ; ++i)
 	{
 		var = &(vars[i]);
 		if (strcmp(var->name, id) == 0)
@@ -108,6 +124,11 @@ var    : ids column TYPE EOL {
        ;
 
 ids    : ID {
+		if (varNameExists($1) == 1)
+		{
+			printf("%s already exists !\n", $1);
+			exit(1);
+		}
 		if ((var_names_number % 10) == 0)
 			var_names = (char **) realloc(var_names, (10 + var_names_number) * sizeof(char *));
 		var_names[var_names_number++] = $1;
