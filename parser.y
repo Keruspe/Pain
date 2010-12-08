@@ -5,6 +5,7 @@
     #include <math.h>
     void yyerror(char* error);
     extern int yylex (void);
+    extern int yylex_destroy(void);
 
     typedef enum {
 	PRINT,
@@ -127,7 +128,7 @@ ids    : ID {
 		if (varNameExists($1) == 1)
 		{
 			printf("%s already exists !\n", $1);
-			exit(1);
+			return(1);
 		}
 		if ((var_names_number % 10) == 0)
 			var_names = (char **) realloc(var_names, (10 + var_names_number) * sizeof(char *));
@@ -191,9 +192,9 @@ main   : BEGI stmts THE_END {
 			printf("\n");
 		}
 		free(vars);
-		exit(0);
+		return(0);
 	   }
-      | BEGI THE_END { exit(0);}
+      | BEGI THE_END { return(0);}
       ;
 
 stmts : stmt { $$ = $1; }
@@ -222,6 +223,8 @@ stmt : Print EOL { $$ = $1; }
 			{
 				toFree = current;
 				current = current->next;
+				if (toFree->svalue != NULL)
+					free(toFree->svalue);
 				free(toFree);
 			}
 			$$ = NULL;
@@ -242,6 +245,8 @@ stmt : Print EOL { $$ = $1; }
 		while (current != NULL)
 		{
 			toFree = current;
+			if (toFree->svalue != NULL)
+				free(toFree->svalue);
 			current = current->next;
 			free(toFree);
 		}
@@ -252,12 +257,12 @@ stmt : Print EOL { $$ = $1; }
 		if (var == NULL)
 		{
 			printf("No such var: %s\n", $1);
-			exit(1);
+			return(1);
 		}
 		else if (var->type != FL)
 		{
 			printf("%s is not a float\n", $1);
-			exit(1);
+			return(1);
 		}
 		else
 			var->value.f = $3;
@@ -267,12 +272,12 @@ stmt : Print EOL { $$ = $1; }
 		if (var == NULL)
 		{
 			printf("No such var: %s\n", $1);
-			exit(1);
+			return(1);
 		}
 		else if (var->type != BOOL)
 		{
 			printf("%s is not a boolean\n", $1);
-			exit(1);
+			return(1);
 		}
 		else
 			var->value.b = $3;
@@ -282,12 +287,12 @@ stmt : Print EOL { $$ = $1; }
 		if (var == NULL)
 		{
 			printf("No such var: %s\n", $1);
-			exit(1);
+			return(1);
 		}
 		else if (var->type != STR)
 		{
 			printf("%s is not a string\n", $1);
-			exit(1);
+			return(1);
 		}
 		else
 			var->value.s = $3;
@@ -374,12 +379,12 @@ Boolean    : Expression gt Expression { $$ = ($1 > $3); }
 		if (var == NULL)
 		{
 			printf("No such var: %s\n", $1);
-			exit(1);
+			return(1);
 		}
 		else if (var->type != BOOL)
 		{
 			printf("%s is not a boolean\n", $1);
-			exit(1);
+			return(1);
 		}
 		else
 			$$ = var->value.b;
@@ -397,12 +402,14 @@ Expression : number                      { $$ = $1; }
            ;
 %%
 
-void yyerror(char* error) {
+void yyerror(char * error) {
     fprintf(stderr, "Erreur : %s\n", error);
+    yylex_destroy();
     exit(1);
 }
 
 int main() {
     yyparse();
+    yylex_destroy();
     return(0);
 }
