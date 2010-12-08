@@ -26,6 +26,14 @@ STRING \"[^\"]*\"
 "(" return(beg);
 ")" return(end);
 "^" return(power);
+"&" return(AND);
+"==" return(eq);
+"!=" return(ne);
+"|" return(OR);
+">" return(gt);
+">=" return(ge);
+"<" return(lt);
+"<=" return(le);
 {NUMBER} {
     yylval.fval = atof(yytext);
     return(number);

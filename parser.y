@@ -31,13 +31,14 @@
     Instr * new;
 %}
 
-%union { float fval; char * cval; Instr * instr; }
+%union { float fval; char * cval; struct _Instr * instr; int bool; }
 %token <fval> number
 %token <cval> String
 %type  <fval> Expression
+%type  <bool> Boolean
 %type  <instr> Print Printable stmt stmts OUT
 
-%token equals beg end print println EOL Comma ID IF THEN ELSE BEGI END THE_END
+%token equals beg end print println EOL Comma ID IF THEN ELSE BEGI END THE_END AND OR gt ge lt le eq ne
 %left  plus minus
 %left  times over
 %left  neg
@@ -79,8 +80,8 @@ stmts : stmt { $$ = $1; }
       ;
 
 stmt : Print EOL { $$ = $1; }
-     | IF Expression THEN stmt { $$ = $4; }
-     | IF Expression THEN stmt ELSE stmt { $$ = $4; }
+     | IF Boolean THEN stmt { $$ = (($2 == TRUE) ? $4 : NULL); }
+     | IF Boolean THEN stmt ELSE stmt { $$ = (($2 == TRUE) ? $4 : $6); }
      | BEGI stmts END { $$ = $2; }
      ;
 
@@ -148,6 +149,16 @@ Printable : Expression              {
 			$$ = $1;
 		}
           ;
+
+Boolean    : Expression gt Expression { $$ = (($1 > $3) ? TRUE : FALSE); }
+           | Expression ge Expression { $$ = (($1 >= $3) ? TRUE : FALSE); }
+           | Expression lt Expression { $$ = (($1 < $3) ? TRUE : FALSE); }
+           | Expression le Expression { $$ = (($1 <= $3) ? TRUE : FALSE); }
+           | Expression eq Expression { $$ = (($1 == $3) ? TRUE : FALSE); }
+           | Expression ne Expression { $$ = (($1 != $3) ? TRUE : FALSE); }
+           | Boolean AND Boolean { $$ = ((($1 == TRUE) && ($3 == TRUE)) ? TRUE : FALSE); }
+           | Boolean OR Boolean { $$ = ((($1 == TRUE) || ($3 == TRUE)) ? TRUE : FALSE); }
+	   ;
 
 Expression : number                      { $$ = $1; }
            | Expression plus Expression  { $$ = $1 + $3; }
