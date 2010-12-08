@@ -39,7 +39,7 @@
 	} value;
     } Var;
 
-    Instr * current;
+    Instr * current = NULL;
     Instr * new;
 
     char ** var_names = NULL;
@@ -178,8 +178,41 @@ stmts : stmt { $$ = $1; }
       ;
 
 stmt : Print EOL { $$ = $1; }
-     | IF Boolean THEN stmt { $$ = ($2 ? $4 : NULL); }
-     | IF Boolean THEN stmt ELSE stmt { $$ = ($2 ? $4 : $6); }
+     | IF Boolean THEN stmt {
+                if ($2)
+			$$ = $4;
+		else
+		{
+			current = $4;
+			Instr * toFree;
+			while (current != NULL)
+			{
+				toFree = current;
+				current = current->next;
+				free(toFree);
+			}
+			$$ = NULL;
+		}
+	   }
+     | IF Boolean THEN stmt ELSE stmt {
+     		Instr * toFree;
+		if ($2)
+		{
+			current = $6;
+			$$ = $4;
+		}
+		else
+		{
+			current = $4;
+			$$ = $6;
+		}
+		while (current != NULL)
+		{
+			toFree = current;
+			current = current->next;
+			free(toFree);
+		}
+ 	    }
      | BEGI stmts END { $$ = $2; }
      ;
 
@@ -190,6 +223,7 @@ Print : print beg Printable end           { $$ = $3; }
 			new->format = "%s";
 			new->svalue = (char *) malloc(2 * sizeof(char));
 			strcpy(new->svalue, "\n");
+			new->next = NULL;
 			current = $3;
 			while (current->next != NULL) current = current->next;
 			current->next = new;

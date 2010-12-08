@@ -47,12 +47,12 @@ STRING \"[^\"]*\"
 }
 {STRING} {
     yytext[yyleng-1] = '\0';
-    yylval.cval = (char *) malloc(strlen(yytext) *  sizeof(char));
+    yylval.cval = (char *) malloc(yyleng *  sizeof(char));
     strcpy(yylval.cval, yytext+1);
     return (String);
 }
 {ID} {
-    yylval.cval = (char *) malloc((strlen(yytext) + 1) *  sizeof(char));
+    yylval.cval = (char *) malloc((yyleng + 1) *  sizeof(char));
     strcpy(yylval.cval, yytext);
     yylval.cval[yyleng] = '\0';
     return (ID);
