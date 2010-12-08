@@ -348,6 +348,21 @@ Boolean    : Expression gt Expression { $$ = ($1 > $3); }
            | Boolean AND Boolean { $$ = ($1 && $3); }
            | Boolean OR Boolean { $$ = ($1 || $3); }
 	   | beg Boolean end { $$ = $2; }
+           | ID {
+     		Var * var = getVar($1);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $1);
+			exit(1);
+		}
+		else if (var->type != BOOL)
+		{
+			printf("%s is not a boolean\n", $1);
+			exit(1);
+		}
+		else
+			$$ = var->value.b;
+	        }
 	   ;
 
 Expression : number                      { $$ = $1; }
