@@ -31,10 +31,11 @@
     Instr * new;
 %}
 
-%union { float fval; char * cval; }
+%union { float fval; char * cval; Instr * instr; }
 %token <fval> number
 %token <cval> String
-%type  <fval> Expression Print Printable stmt stmts OUT
+%type  <fval> Expression
+%type  <instr> Print Printable stmt stmts OUT
 
 %token equals beg end print println EOL Comma ID IF THEN ELSE BEGI END THE_END
 %left  plus minus
@@ -47,7 +48,7 @@
 %%
 OUT   : BEGI stmts THE_END {
 		Instr * toFree;
-		current = start.next;
+		current = $2;
 		while (current != NULL) {
 			toFree = current;
 			if (current->action == PRINT) {
@@ -65,22 +66,43 @@ OUT   : BEGI stmts THE_END {
 		}
 		exit(0);
 	   }
-      | BEGI THE_END {exit(0);}
+      | BEGI THE_END { exit(0);}
       ;
 
-stmts : stmt
-      | stmt stmts
+stmts : stmt { $$ = $1; }
+      | stmts stmt {
+			current = $1;
+			while (current->next != NULL) current = current->next;
+			current->next = new;
+			$$ = $1;
+      	   }
       ;
 
-stmt : Print EOL
+stmt : Print EOL { $$ = $1; }
      | IF Expression THEN stmt { $$ = $4; }
      | IF Expression THEN stmt ELSE stmt { $$ = $4; }
      | BEGI stmts END { $$ = $2; }
      ;
 
-Print : print beg Printable end           { $$ = 0; }
-      | println beg Printable end         { $$ = printf("\n"); }
-      | println beg end                   { $$ = printf("\n"); }
+Print : print beg Printable end           { $$ = $3; }
+      | println beg Printable end         {
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->format = "%s";
+			new->svalue = (char *) malloc(2 * sizeof(char));
+			strcpy(new->svalue, "\n");
+			new->next = $3;
+			$$ = new;
+      		}
+      | println beg end                   {
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->format = "%s";
+			new->svalue = (char *) malloc(2 * sizeof(char));
+			strcpy(new->svalue, "\n");
+			new->next = NULL;
+			$$ = new;
+	        }
       ;
 
 Printable : Expression              {
@@ -90,42 +112,40 @@ Printable : Expression              {
 			new->svalue = NULL;
 			new->value = $1;
 			new->next = NULL;
-			current->next = new;
-			current = new;
-			$$ = 0;
+			$$ = new;
 		}
-          | String                  { 
+          | String                  {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%s";
 			new->svalue = (char *) malloc((strlen($1) + 1) * sizeof(char));
 			strcpy(new->svalue, $1);
 			new->next = NULL;
-			current->next = new;
-			current = new;
-			$$ = 0;
+			$$ = new;
 		}
-          | Printable Comma String { 
+          | Printable Comma String {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%s";
 			new->svalue = (char *) malloc((strlen($3) + 1) * sizeof(char));
 			strcpy(new->svalue, $3);
 			new->next = NULL;
+			current = $1;
+			while (current->next != NULL) current = current->next;
 			current->next = new;
-			current = new;
-			$$ = 0;
+			$$ = $1;
 		}
-          | Printable Comma Expression { 
+          | Printable Comma Expression {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%.3f";
 			new->svalue = NULL;
 			new->value = $3;
 			new->next = NULL;
+			current = $1;
+			while (current->next != NULL) current = current->next;
 			current->next = new;
-			current = new;
-			$$ = 0;
+			$$ = $1;
 		}
           ;
 
