@@ -46,6 +46,18 @@
     int var_names_number = 0;
     Var * vars = NULL;
     int vars_number = 0;
+
+    Var * getVar(char * id) {
+	int i;
+	Var * var;
+	for (i=9 ; i < vars_number ; ++i)
+	{
+		var = &(vars[i]);
+		if (strcmp(var->name, id) == 0)
+			return var;
+	}
+	return NULL;
+    }
 %}
 
 %expect 1
@@ -214,6 +226,51 @@ stmt : Print EOL { $$ = $1; }
 		}
  	    }
      | BEGI stmts END { $$ = $2; }
+     | ID AFFECT Expression {
+     		Var * var = getVar($1);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $1);
+			exit(1);
+		}
+		else if (var->type != FL)
+		{
+			printf("%s is not a float\n", $1);
+			exit(1);
+		}
+		else
+			var->value.f = $3;
+	   }
+     | ID AFFECT Boolean {
+     		Var * var = getVar($1);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $1);
+			exit(1);
+		}
+		else if (var->type != BOOL)
+		{
+			printf("%s is not a boolean\n", $1);
+			exit(1);
+		}
+		else
+			var->value.b = $3;
+	   }
+     | ID AFFECT String {
+     		Var * var = getVar($1);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $1);
+			exit(1);
+		}
+		else if (var->type != STR)
+		{
+			printf("%s is not a string\n", $1);
+			exit(1);
+		}
+		else
+			var->value.s = $3;
+	   }
      ;
 
 Print : print beg Printable end           { $$ = $3; }
