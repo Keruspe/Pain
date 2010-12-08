@@ -60,7 +60,6 @@ OUT   : BEGI stmts THE_END {
 					printf(current->format, current->svalue);
 					free(current->svalue);
 				}
-				printf("\n");
 			}
 			current = current->next;
 			free(toFree);
@@ -72,10 +71,15 @@ OUT   : BEGI stmts THE_END {
 
 stmts : stmt { $$ = $1; }
       | stmts stmt {
-			current = $1;
-			while (current->next != NULL) current = current->next;
-			current->next = new;
-			$$ = $1;
+			if ($1 == NULL)
+				$$ = $2;
+			else
+			{
+				current = $1;
+				while (current->next != NULL) current = current->next;
+				current->next = $2;
+				$$ = $1;
+			}
       	   }
       ;
 
@@ -92,8 +96,10 @@ Print : print beg Printable end           { $$ = $3; }
 			new->format = "%s";
 			new->svalue = (char *) malloc(2 * sizeof(char));
 			strcpy(new->svalue, "\n");
-			new->next = $3;
-			$$ = new;
+			current = $3;
+			while (current->next != NULL) current = current->next;
+			current->next = new;
+			$$ = $3;
       		}
       | println beg end                   {
 	  		new = (Instr *) malloc(sizeof(Instr));
