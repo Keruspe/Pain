@@ -7,11 +7,6 @@
     extern int yylex (void);
 
     typedef enum {
-	TRUE,
-	FALSE
-    } Bool;
-
-    typedef enum {
 	PRINT,
 	AFFECT,
 	NONE
@@ -31,14 +26,17 @@
     Instr * new;
 %}
 
-%union { float fval; char * cval; struct _Instr * instr; int bool; }
+%expect 1
+
+%union { float fval; char * cval; struct _Instr * instr; int bval; }
 %token <fval> number
 %token <cval> String
 %type  <fval> Expression
-%type  <bool> Boolean
+%type  <bval> Boolean
 %type  <instr> Print Printable stmt stmts OUT
 
-%token equals beg end print println EOL Comma ID IF THEN ELSE BEGI END THE_END AND OR gt ge lt le eq ne
+%token equals beg end print println EOL Comma ID IF THEN ELSE BEGI END THE_END gt ge lt le eq ne
+%left  AND OR
 %left  plus minus
 %left  times over
 %left  neg
@@ -84,8 +82,8 @@ stmts : stmt { $$ = $1; }
       ;
 
 stmt : Print EOL { $$ = $1; }
-     | IF Boolean THEN stmt { $$ = (($2 == TRUE) ? $4 : NULL); }
-     | IF Boolean THEN stmt ELSE stmt { $$ = (($2 == TRUE) ? $4 : $6); }
+     | IF Boolean THEN stmt { $$ = ($2 ? $4 : NULL); }
+     | IF Boolean THEN stmt ELSE stmt { $$ = ($2 ? $4 : $6); }
      | BEGI stmts END { $$ = $2; }
      ;
 
@@ -156,14 +154,14 @@ Printable : Expression              {
 		}
           ;
 
-Boolean    : Expression gt Expression { $$ = (($1 > $3) ? TRUE : FALSE); }
-           | Expression ge Expression { $$ = (($1 >= $3) ? TRUE : FALSE); }
-           | Expression lt Expression { $$ = (($1 < $3) ? TRUE : FALSE); }
-           | Expression le Expression { $$ = (($1 <= $3) ? TRUE : FALSE); }
-           | Expression eq Expression { $$ = (($1 == $3) ? TRUE : FALSE); }
-           | Expression ne Expression { $$ = (($1 != $3) ? TRUE : FALSE); }
-           | Boolean AND Boolean { $$ = ((($1 == TRUE) && ($3 == TRUE)) ? TRUE : FALSE); }
-           | Boolean OR Boolean { $$ = ((($1 == TRUE) || ($3 == TRUE)) ? TRUE : FALSE); }
+Boolean    : Expression gt Expression { $$ = ($1 > $3); }
+           | Expression ge Expression { $$ = ($1 >= $3); }
+           | Expression lt Expression { $$ = ($1 < $3); }
+           | Expression le Expression { $$ = ($1 <= $3); }
+           | Expression eq Expression { $$ = ($1 == $3); }
+           | Expression ne Expression { $$ = ($1 != $3); }
+           | Boolean AND Boolean { $$ = ($1 && $3); }
+           | Boolean OR Boolean { $$ = ($1 || $3); }
 	   ;
 
 Expression : number                      { $$ = $1; }
