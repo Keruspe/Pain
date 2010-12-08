@@ -8,7 +8,7 @@
 
     typedef enum {
 	PRINT,
-	AFFECT,
+	AFF,
 	NONE
     } Action;
 
@@ -21,6 +21,19 @@
 	float value;
     };
 
+    typedef struct {
+	char * name;
+	enum {
+		STRING, FLOAT, INTEGER, BOOLEAN
+	} type;
+	union {
+		char * s;
+		float f;
+		int i;
+		int b;
+	} value;
+    } Var;
+
     Instr start = {NULL, NONE, NULL, NULL, 0};
     Instr * current = &start;
     Instr * new;
@@ -30,12 +43,12 @@
 
 %union { float fval; char * cval; struct _Instr * instr; int bval; }
 %token <fval> number
-%token <cval> String
-%type  <fval> Expression
+%token <cval> String ID
+%type  <fval> Expression vars var
 %type  <bval> Boolean
-%type  <instr> Print Printable stmt stmts OUT
+%type  <instr> Print Printable stmt stmts main OUT
 
-%token equals beg end print println EOL Comma ID IF THEN ELSE BEGI END THE_END gt ge lt le eq ne
+%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR AFFECT
 %left  AND OR
 %left  plus minus
 %left  times over
@@ -45,7 +58,19 @@
 %start OUT
 
 %%
-OUT   : BEGI stmts THE_END {
+
+OUT    : main
+       | VAR vars main { $$ = NULL; }
+       ;
+
+vars   : var
+       | vars var
+       ;
+
+var    : ID AFFECT Expression EOL { printf("var %s = %.3f\n", $1, $3); }
+       ;
+
+main   : BEGI stmts THE_END {
 		Instr * toFree;
 		current = $2;
 		while (current != NULL) {
@@ -123,8 +148,7 @@ Printable : Expression              {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%s";
-			new->svalue = (char *) malloc((strlen($1) + 1) * sizeof(char));
-			strcpy(new->svalue, $1);
+			new->svalue = $1;
 			new->next = NULL;
 			$$ = new;
 		}
@@ -132,8 +156,7 @@ Printable : Expression              {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%s";
-			new->svalue = (char *) malloc((strlen($3) + 1) * sizeof(char));
-			strcpy(new->svalue, $3);
+			new->svalue = $3;
 			new->next = NULL;
 			current = $1;
 			while (current->next != NULL) current = current->next;
@@ -162,6 +185,7 @@ Boolean    : Expression gt Expression { $$ = ($1 > $3); }
            | Expression ne Expression { $$ = ($1 != $3); }
            | Boolean AND Boolean { $$ = ($1 && $3); }
            | Boolean OR Boolean { $$ = ($1 || $3); }
+	   | beg Boolean end { $$ = $2; }
 	   ;
 
 Expression : number                      { $$ = $1; }

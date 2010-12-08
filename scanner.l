@@ -13,9 +13,10 @@ STRING \"[^\"]*\"
 "if" return(IF);
 "then" return(THEN);
 "else" return(ELSE);
-"Begin" return(BEGI);
-"End" return(END);
-"End." return(THE_END);
+"BEGIN" return(BEGI);
+"END" return(END);
+"END." return(THE_END);
+"VAR" return(VAR);
 "," return(Comma);
 ";" return(EOL);
 "+" return(plus);
@@ -34,18 +35,21 @@ STRING \"[^\"]*\"
 ">=" return(ge);
 "<" return(lt);
 "<=" return(le);
+":=" return(AFFECT);
 {NUMBER} {
     yylval.fval = atof(yytext);
     return(number);
 }
 {STRING} {
     yytext[yyleng-1] = '\0';
-    ++yytext;
-    yylval.cval = yytext;
+    yylval.cval = (char *) malloc(strlen(yytext) *  sizeof(char));
+    strcpy(yylval.cval, yytext+1);
     return (String);
 }
 {ID} {
-    yylval.cval = yytext;
+    yylval.cval = (char *) malloc((strlen(yytext) + 1) *  sizeof(char));
+    strcpy(yylval.cval, yytext);
+    yylval.cval[yyleng] = '\0';
     return (ID);
 }
 {BLANK}+ ;
