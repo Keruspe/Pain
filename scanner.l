@@ -36,6 +36,11 @@ STRING \"[^\"]*\"
 "<" return(lt);
 "<=" return(le);
 ":=" return(AFFECT);
+":" return(column);
+"integer" return(INTEGER);
+"float" return(FLOAT);
+"string" return(STRING);
+"boolean" return(BOOLEAN);
 {NUMBER} {
     yylval.fval = atof(yytext);
     return(number);

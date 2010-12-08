@@ -21,11 +21,16 @@
 	float value;
     };
 
+    typedef enum {
+	STR,
+	FL,
+	INT,
+	BOOL
+    } Type;
+
     typedef struct {
 	char * name;
-	enum {
-		STRING, FLOAT, INTEGER, BOOLEAN
-	} type;
+	Type type;
 	union {
 		char * s;
 		float f;
@@ -34,21 +39,27 @@
 	} value;
     } Var;
 
-    Instr start = {NULL, NONE, NULL, NULL, 0};
-    Instr * current = &start;
+    Instr * current;
     Instr * new;
+
+    char ** var_names = NULL;
+    int var_names_number = 0;
+    Var * vars = NULL;
+    int vars_number = 0;
 %}
 
 %expect 1
 
-%union { float fval; char * cval; struct _Instr * instr; int bval; }
+%union { float fval; char * cval; struct _Instr * instr; int bval; int type; char ** ccval; }
 %token <fval> number
 %token <cval> String ID
 %type  <fval> Expression vars var
 %type  <bval> Boolean
 %type  <instr> Print Printable stmt stmts main OUT
+%type  <type> TYPE
+%type  <ccval> ids
 
-%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR AFFECT
+%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR AFFECT INTEGER FLOAT STRING BOOLEAN column
 %left  AND OR
 %left  plus minus
 %left  times over
@@ -67,7 +78,41 @@ vars   : var
        | vars var
        ;
 
-var    : ID AFFECT Expression EOL { printf("var %s = %.3f\n", $1, $3); }
+var    : ids column TYPE EOL { 
+			int i;
+			for (i = 0 ;  i < var_names_number ; ++i)
+			{
+				if ((vars_number % 10) == 0)
+					vars = (Var *) realloc(vars, (10 + vars_number) * sizeof(Var));
+				Var var;
+				var.name = var_names[i];
+				var.type = $3;
+				vars[vars_number++] = var;
+			}
+			free(var_names);
+			var_names = NULL;
+			var_names_number = 0;
+		}
+       ;
+
+ids    : ID {
+		if ((var_names_number % 10) == 0)
+			var_names = (char **) realloc(var_names, (10 + var_names_number) * sizeof(char *));
+		var_names[var_names_number++] = $1;
+		$$ = var_names;
+	    }
+       | ids Comma ID {
+		if ((var_names_number % 10) == 0)
+			var_names = (char **) realloc(var_names, (10 + var_names_number) * sizeof(char *));
+		var_names[var_names_number++] = $3;
+		$$ = var_names;
+            }
+       ;
+
+TYPE   : INTEGER { $$ = INT; }
+       | FLOAT { $$ = FL; }
+       | STRING { $$ = STR; }
+       | BOOLEAN { $$ = BOOL; }
        ;
 
 main   : BEGI stmts THE_END {
@@ -87,6 +132,32 @@ main   : BEGI stmts THE_END {
 			current = current->next;
 			free(toFree);
 		}
+		int i;
+		Var var;
+		printf("\nVars:\n");
+		for (i = 0 ; i < vars_number ; ++i)
+		{
+			var = vars[i];
+			printf("%s: ", var.name);
+			free(var.name);
+			switch (var.type)
+			{
+			case INT:
+				printf("int");
+				break;
+			case FL:
+				printf("float");
+				break;
+			case STR:
+				printf("string");
+				break;
+			case BOOL:
+				printf("bool");
+				break;
+			}
+			printf("\n");
+		}
+		free(vars);
 		exit(0);
 	   }
       | BEGI THE_END { exit(0);}
