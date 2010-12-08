@@ -1,6 +1,7 @@
 %{
     #include <stdio.h>
     #include <stdlib.h>
+    #include <string.h>
     #include <math.h>
     void yyerror(char* error);
     extern int yylex (void);
@@ -53,7 +54,10 @@ OUT   : BEGI stmts THE_END {
 				if (current->svalue == NULL)
 					printf(current->format, current->value);
 				else
+				{
 					printf(current->format, current->svalue);
+					free(current->svalue);
+				}
 				printf("\n");
 			}
 			current = current->next;
@@ -79,7 +83,7 @@ Print : print beg Printable end           { $$ = 0; }
       | println beg end                   { $$ = printf("\n"); }
       ;
 
-Printable : Expression              { 
+Printable : Expression              {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%.3f";
@@ -94,7 +98,8 @@ Printable : Expression              {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%s";
-			new->svalue = $1;
+			new->svalue = (char *) malloc((strlen($1) + 1) * sizeof(char));
+			strcpy(new->svalue, $1);
 			new->next = NULL;
 			current->next = new;
 			current = new;
@@ -104,7 +109,8 @@ Printable : Expression              {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->format = "%s";
-			new->svalue = $3;
+			new->svalue = (char *) malloc((strlen($3) + 1) * sizeof(char));
+			strcpy(new->svalue, $3);
 			new->next = NULL;
 			current->next = new;
 			current = new;
