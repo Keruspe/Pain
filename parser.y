@@ -210,11 +210,11 @@ main   : BEGI stmts THE_END {
 
 stmts : stmt { $$ = $1; }
       | stmts stmt {
-			if ($1 == NULL)
+      			current = $1;
+			if (current == NULL)
 				$$ = $2;
 			else
 			{
-				current = $1;
 				while (current->next != NULL) current = current->next;
 				current->next = $2;
 				$$ = $1;
@@ -263,7 +263,8 @@ stmt : Print EOL { $$ = $1; }
 		}
  	    }
      | BEGI stmts END { $$ = $2; }
-     | ID AFFECT Expression {
+     | ID AFFECT Expression EOL {
+     		$$ = NULL;
      		Var * var = getVar($1);
 		if (var == NULL)
 		{
@@ -278,7 +279,8 @@ stmt : Print EOL { $$ = $1; }
 		else
 			var->value.f = $3;
 	   }
-     | ID AFFECT Boolean {
+     | ID AFFECT Boolean EOL {
+     		$$ = NULL;
      		Var * var = getVar($1);
 		if (var == NULL)
 		{
@@ -293,7 +295,8 @@ stmt : Print EOL { $$ = $1; }
 		else
 			var->value.b = $3;
 	   }
-     | ID AFFECT String {
+     | ID AFFECT String EOL {
+     		$$ = NULL;
      		Var * var = getVar($1);
 		if (var == NULL)
 		{
@@ -308,7 +311,8 @@ stmt : Print EOL { $$ = $1; }
 		else
 			var->value.s = $3;
 	   }
-     /*| ID AFFECT ID {
+     /*| ID AFFECT ID EOL {
+     		$$ = NULL;
      		Var * var = getVar($1);
 		Var * var2  =  getVar($3);
 		if (var == NULL)
