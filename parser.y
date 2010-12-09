@@ -83,10 +83,11 @@
 
 %expect 2
 
-%union { float fval; char * cval; struct _Instr * instr; int bval; int type; char ** ccval; }
-%token <fval> number
+%union { int ival; float fval; char * cval; struct _Instr * instr; int bval; int type; char ** ccval; }
+%token <fval> fnumber
+%token <ival> inumber
 %token <cval> String ID
-%type  <fval> Expression vars var
+%type  <fval> FExpression vars var
 %type  <bval> Boolean
 %type  <instr> Print Printable stmt stmts main OUT
 %type  <type> TYPE
@@ -275,7 +276,7 @@ stmt : Print EOL { $$ = $1; }
 		}
  	    }
      | BEGI stmts END { $$ = $2; }
-     | ID AFFECT Expression EOL {
+     | ID AFFECT FExpression EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
 		if (var == NULL)
@@ -387,7 +388,7 @@ Print : print beg Printable end           { $$ = $3; }
 	        }
       ;
 
-Printable : Expression              {
+Printable : FExpression              {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->value.f = $1;
@@ -428,7 +429,7 @@ Printable : Expression              {
 			current->next = new;
 			$$ = $1;
 		}
-          | Printable Comma Expression {
+          | Printable Comma FExpression {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->type = FL;
@@ -458,12 +459,12 @@ Printable : Expression              {
 		}
           ;
 
-Boolean    : Expression gt Expression { $$ = ($1 > $3); }
-           | Expression ge Expression { $$ = ($1 >= $3); }
-           | Expression lt Expression { $$ = ($1 < $3); }
-           | Expression le Expression { $$ = ($1 <= $3); }
-           | Expression eq Expression { $$ = ($1 == $3); }
-           | Expression ne Expression { $$ = ($1 != $3); }
+Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
+           | FExpression ge FExpression { $$ = ($1 >= $3); }
+           | FExpression lt FExpression { $$ = ($1 < $3); }
+           | FExpression le FExpression { $$ = ($1 <= $3); }
+           | FExpression eq FExpression { $$ = ($1 == $3); }
+           | FExpression ne FExpression { $$ = ($1 != $3); }
            | Boolean AND Boolean { $$ = ($1 && $3); }
            | Boolean OR Boolean { $$ = ($1 || $3); }
 	   | beg Boolean end { $$ = $2; }
@@ -484,15 +485,15 @@ Boolean    : Expression gt Expression { $$ = ($1 > $3); }
 	        }
 	   ;
 
-Expression : number                      { $$ = $1; }
-           | Expression plus Expression  { $$ = $1 + $3; }
-           | Expression minus Expression { $$ = $1 - $3; }
-           | Expression over Expression  { $$ = $1 / $3; }
-           | Expression times Expression { $$ = $1 * $3; }
-           | beg Expression end          { $$ = $2; }
-           | minus Expression %prec neg  { $$ = -$2; }
-           | Expression power Expression { $$ = pow($1, $3); }
-           ;
+FExpression : fnumber                       { $$ = $1; }
+            | FExpression plus FExpression  { $$ = $1 + $3; }
+            | FExpression minus FExpression { $$ = $1 - $3; }
+            | FExpression over FExpression  { $$ = $1 / $3; }
+            | FExpression times FExpression { $$ = $1 * $3; }
+            | beg FExpression end           { $$ = $2; }
+            | minus FExpression %prec neg   { $$ = -$2; }
+            | FExpression power FExpression { $$ = pow($1, $3); }
+            ;
 %%
 
 void yyerror(char * error) {

@@ -1,6 +1,7 @@
 BLANK [ \n\t]
 DIGIT [0-9]
-NUMBER {DIGIT}+\.?{DIGIT}*
+INUMBER {DIGIT}+
+FNUMBER {DIGIT}+\.?{DIGIT}*
 ID [a-zA-Z_][a-zA-Z0-9_-]*
 STRING \"[^\"]*\"
 %{
@@ -41,9 +42,13 @@ STRING \"[^\"]*\"
 "float" return(FLOAT);
 "string" return(STRING);
 "boolean" return(BOOLEAN);
-{NUMBER} {
+{INUMBER} {
+    yylval.ival = atoi(yytext);
+    return(inumber);
+}
+{FNUMBER} {
     yylval.fval = atof(yytext);
-    return(number);
+    return(fnumber);
 }
 {STRING} {
     yytext[yyleng-1] = '\0';
