@@ -387,6 +387,20 @@ Printable : Expression              {
 			new->next = NULL;
 			$$ = new;
 		}
+          | ID                 {
+	  		Var * var = getVar($1);
+			if (var == NULL)
+			{
+				printf("No such var: %s\n", $1);
+				return(1);
+			}
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->type = var->type;
+			new->value = var->value;
+			new->next = NULL;
+			$$ = new;
+		}
           | Printable Comma String {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
@@ -403,6 +417,23 @@ Printable : Expression              {
 			new->action = PRINT;
 			new->type = FL;
 			new->value.f = $3;
+			new->next = NULL;
+			current = $1;
+			while (current->next != NULL) current = current->next;
+			current->next = new;
+			$$ = $1;
+		}
+          | Printable Comma ID {
+	  		Var * var = getVar($3);
+			if (var == NULL)
+			{
+				printf("No such var: %s\n", $3);
+				return(1);
+			}
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->type = var->type;
+			new->value = var->value;
 			new->next = NULL;
 			current = $1;
 			while (current->next != NULL) current = current->next;
