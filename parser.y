@@ -6,6 +6,7 @@
     void yyerror(char* error);
     extern int yylex (void);
     extern int yylex_destroy(void);
+    extern FILE * yyin;
 
     typedef enum {
 	PRINT,
@@ -489,7 +490,12 @@ void yyerror(char * error) {
     exit(1);
 }
 
-int main() {
+int main(int argc, char ** argv) {
+    ++argv; --argc;
+    if (argc > 0)
+    	yyin = fopen(argv[0], "r");
+    else
+        yyin = stdin;
     yyparse();
     yylex_destroy();
     return(0);
