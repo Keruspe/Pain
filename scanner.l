@@ -14,10 +14,10 @@ STRING \"[^\"]*\"
 "if" return(IF);
 "then" return(THEN);
 "else" return(ELSE);
-"BEGIN" return(BEGI);
-"END" return(END);
-"END." return(THE_END);
-"VAR" return(VAR);
+"BEGIN"|"begin"|"Begin" return(BEGI);
+"END"|"end"|"End" return(END);
+"END."|"end."|"End." return(THE_END);
+"VAR"|"var"|"Var" return(VAR);
 "," return(Comma);
 ";" return(EOL);
 "+" return(plus);
@@ -39,7 +39,7 @@ STRING \"[^\"]*\"
 ":=" return(AFFECT);
 ":" return(column);
 "integer" return(INTEGER);
-"float" return(FLOAT);
+"real" return(FLOAT);
 "string" return(STRING);
 "boolean" return(BOOLEAN);
 {INUMBER} {
