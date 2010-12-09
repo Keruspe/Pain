@@ -83,7 +83,7 @@
     }
 %}
 
-%expect 2
+%expect 1
 
 %union { int ival; float fval; char cval; char * sval; struct _Instr * instr; int bval; int type; char ** ccval; }
 %token <cval>  Char
@@ -465,6 +465,15 @@ Printable : FExpression              {
 			new->next = NULL;
 			$$ = new;
 		}
+	  | Boolean   {
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->type = STR;
+			new->value.s = (char *) malloc(6 * sizeof(char));
+			strcpy(new->value.s, ($1) ? "true" : "false");
+			new->next = NULL;
+			$$ = new;
+	      }
           | ID                 {
 	  		Var * var = getVar($1);
 			if (var == NULL)
@@ -512,6 +521,18 @@ Printable : FExpression              {
 			current->next = new;
 			$$ = $1;
 		}
+	  | Printable Comma Boolean   {
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->type = STR;
+			new->value.s = (char *) malloc(6 * sizeof(char));
+			strcpy(new->value.s, ($1) ? "true" : "false");
+			new->next = NULL;
+			current = $1;
+			while (current->next != NULL) current = current->next;
+			current->next = new;
+			$$ = $1;
+	      }
           | Printable Comma ID {
 	  		Var * var = getVar($3);
 			if (var == NULL)
@@ -549,9 +570,9 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 	   | not Boolean { $$ = !($2); }
 	   | T { $$ = 1; }
 	   | F { $$ = 0; }
-	   /*| Boolean eq Boolean { $$ = ($1 == $3); }
-	   | Boolean ne Boolean { $$ = ($1 != $3); }*/
-           | ID {
+	   | Boolean eq Boolean { $$ = ($1 == $3); }
+	   | Boolean ne Boolean { $$ = ($1 != $3); }
+           /*| ID {
      		Var * var = getVar($1);
 		if (var == NULL)
 		{
@@ -565,7 +586,7 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		}
 		else
 			$$ = var->value.b;
-	        }
+	        }*/
 	   | ID gt ID {
 	   		Var * var = getVar($1);
 			if (var == NULL)
