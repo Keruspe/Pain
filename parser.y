@@ -88,8 +88,9 @@
 %type  <type> TYPE
 %type  <ccval> ids
 
-%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR AFFECT INTEGER FLOAT STRING BOOLEAN column
+%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR INTEGER FLOAT STRING BOOLEAN column
 %left  AND OR
+%right AFFECT
 %left  plus minus
 %left  times over
 %left  neg
@@ -297,6 +298,43 @@ stmt : Print EOL { $$ = $1; }
 		else
 			var->value.s = $3;
 	   }
+     /*| ID AFFECT ID {
+     		Var * var = getVar($1);
+		Var * var2  =  getVar($3);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $1);
+			return(1);
+		} 
+		else if (var2 == NULL)
+		{
+			printf("No such var: %s\n", $3);
+			return(1);
+		}
+		else if (var->type != var2->type)
+		{
+			printf("%s and %s have not the same type\n", $1, $3);
+			return(1);
+		}
+		else
+		{
+			switch (var->type)
+			{
+			case STR:
+				var->value.s = var2->value.s;
+				break;
+			case FL:
+				var->value.f = var2->value.f;
+				break;
+			case INT:
+				var->value.i = var2->value.i;
+				break;
+			case BOOL:
+				var->value.b = var2->value.b;
+				break;
+			}
+		}
+	   }*/
      ;
 
 Print : print beg Printable end           { $$ = $3; }

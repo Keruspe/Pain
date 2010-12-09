@@ -1,3 +1,2 @@
-var := var;
 write(var);
 float vs int
