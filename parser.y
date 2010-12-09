@@ -549,6 +549,8 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 	   | not Boolean { $$ = !($2); }
 	   | T { $$ = 1; }
 	   | F { $$ = 0; }
+	   /*| Boolean eq Boolean { $$ = ($1 == $3); }
+	   | Boolean ne Boolean { $$ = ($1 != $3); }*/
            | ID {
      		Var * var = getVar($1);
 		if (var == NULL)
@@ -564,8 +566,6 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		else
 			$$ = var->value.b;
 	        }
-	   | Boolean eq Boolean { $$ = ($1 == $3); }
-	   | Boolean ne Boolean { $$ = ($1 != $3); }
 	   | ID gt ID {
 	   		Var * var = getVar($1);
 			if (var == NULL)
@@ -665,6 +665,56 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 				return(1);
 			}
 			$$ = ($1 <= $3);
+		}
+	   | ID eq ID {
+	   		Var * var = getVar($1);
+			if (var == NULL)
+			{
+				printf("No such var: %s\n", $1);
+				return(1);
+			}
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			Var * var2 = getVar($3);
+			if (var2 == NULL)
+			{
+				printf("No such var: %s\n", $3);
+				return(1);
+			}
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			$$ = ($1 == $3);
+		}
+	   | ID ne ID {
+	   		Var * var = getVar($1);
+			if (var == NULL)
+			{
+				printf("No such var: %s\n", $1);
+				return(1);
+			}
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			Var * var2 = getVar($3);
+			if (var2 == NULL)
+			{
+				printf("No such var: %s\n", $3);
+				return(1);
+			}
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			$$ = ($1 != $3);
 		}
 	   ;
 
