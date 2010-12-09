@@ -83,10 +83,11 @@
 
 %expect 2
 
-%union { int ival; float fval; char * cval; struct _Instr * instr; int bval; int type; char ** ccval; }
+%union { int ival; float fval; char cval; char * sval; struct _Instr * instr; int bval; int type; char ** ccval; }
+%token <cval>  Char
 %token <fval> fnumber
 %token <ival> inumber
-%token <cval> String ID
+%token <sval> String ID
 %type  <ival> IExpression
 %type  <fval> FExpression vars var
 %type  <bval> Boolean
@@ -94,7 +95,7 @@
 %type  <type> TYPE
 %type  <ccval> ids
 
-%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR INTEGER FLOAT STRING BOOLEAN column
+%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR INTEGER FLOAT STRING BOOLEAN column T F
 %left  AND OR
 %right AFFECT
 %left  plus minus
@@ -512,6 +513,8 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
            | Boolean AND Boolean { $$ = ($1 && $3); }
            | Boolean OR Boolean { $$ = ($1 || $3); }
 	   | beg Boolean end { $$ = $2; }
+	   | T { $$ = 1; }
+	   | F { $$ = 0; }
            | ID {
      		Var * var = getVar($1);
 		if (var == NULL)

@@ -4,6 +4,7 @@ INUMBER {DIGIT}+
 FNUMBER {DIGIT}+\.?{DIGIT}*
 ID [a-zA-Z_][a-zA-Z0-9_-]*
 STRING \"[^\"]*\"
+CHAR \'.\'
 %{
 	#include "y.tab.h"
 %}
@@ -42,6 +43,8 @@ STRING \"[^\"]*\"
 "real" return(FLOAT);
 "string" return(STRING);
 "boolean" return(BOOLEAN);
+"true"|"True"|"TRUE" return(T);
+"false"|"False"|"FALSE" return(F);
 {INUMBER} {
     yylval.ival = atoi(yytext);
     return(inumber);
@@ -50,16 +53,20 @@ STRING \"[^\"]*\"
     yylval.fval = atof(yytext);
     return(fnumber);
 }
+{CHAR} {
+    yylval.cval=yytext[1];
+    return(Char);
+}
 {STRING} {
     yytext[yyleng-1] = '\0';
-    yylval.cval = (char *) malloc(yyleng *  sizeof(char));
-    strcpy(yylval.cval, yytext+1);
+    yylval.sval = (char *) malloc(yyleng *  sizeof(char));
+    strcpy(yylval.sval, yytext+1);
     return (String);
 }
 {ID} {
-    yylval.cval = (char *) malloc((yyleng + 1) *  sizeof(char));
-    strcpy(yylval.cval, yytext);
-    yylval.cval[yyleng] = '\0';
+    yylval.sval = (char *) malloc((yyleng + 1) *  sizeof(char));
+    strcpy(yylval.sval, yytext);
+    yylval.sval[yyleng] = '\0';
     return (ID);
 }
 "program"[^\n]*"\n"|"Program"[^\n]*"\n"|"PROGRAM"[^\n]*"\n"; 
