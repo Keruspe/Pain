@@ -8,7 +8,7 @@ test : boolean;
 Begin
 a := 3;
 b:=8.5;
-test := (5 > 6);
+test := (a > b);
 c := 2;
 s := "yay";
 writeln(s, " ", a);

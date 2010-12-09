@@ -36,6 +36,7 @@ CHAR \'\\?.\'
 ">=" return(ge);
 "<" return(lt);
 "<=" return(le);
+"!" return (not);
 ":=" return(AFFECT);
 ":" return(column);
 "integer"|"Integer" return(INTEGER);
