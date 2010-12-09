@@ -87,6 +87,7 @@
 %token <fval> fnumber
 %token <ival> inumber
 %token <cval> String ID
+%type  <ival> IExpression
 %type  <fval> FExpression vars var
 %type  <bval> Boolean
 %type  <instr> Print Printable stmt stmts main OUT
@@ -292,6 +293,24 @@ stmt : Print EOL { $$ = $1; }
 		else
 			var->value.f = $3;
 	   }
+     | ID AFFECT IExpression EOL {
+     		$$ = NULL;
+     		Var * var = getVar($1);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $1);
+			return(1);
+		}
+		else if (var->type != INT && var->type != FL)
+		{
+			printf("%s is not an int nor a float\n", $1);
+			return(1);
+		}
+		else if (var->type == FL)
+			var->value.f = $3+0.;
+		else
+			var->value.i = $3;
+	   }
      | ID AFFECT Boolean EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
@@ -396,6 +415,14 @@ Printable : FExpression              {
 			new->next = NULL;
 			$$ = new;
 		}
+          | IExpression                  {
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->type = INT;
+			new->value.i = $1;
+			new->next = NULL;
+			$$ = new;
+		}
           | String                  {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
@@ -440,6 +467,17 @@ Printable : FExpression              {
 			current->next = new;
 			$$ = $1;
 		}
+          | Printable Comma IExpression {
+	  		new = (Instr *) malloc(sizeof(Instr));
+			new->action = PRINT;
+			new->type = INT;
+			new->value.i = $3;
+			new->next = NULL;
+			current = $1;
+			while (current->next != NULL) current = current->next;
+			current->next = new;
+			$$ = $1;
+		}
           | Printable Comma ID {
 	  		Var * var = getVar($3);
 			if (var == NULL)
@@ -465,6 +503,12 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
            | FExpression le FExpression { $$ = ($1 <= $3); }
            | FExpression eq FExpression { $$ = ($1 == $3); }
            | FExpression ne FExpression { $$ = ($1 != $3); }
+           | IExpression gt IExpression { $$ = ($1 > $3); }
+	   | IExpression ge IExpression { $$ = ($1 >= $3); }
+           | IExpression lt IExpression { $$ = ($1 < $3); }
+           | IExpression le IExpression { $$ = ($1 <= $3); }
+           | IExpression eq IExpression { $$ = ($1 == $3); }
+           | IExpression ne IExpression { $$ = ($1 != $3); }
            | Boolean AND Boolean { $$ = ($1 && $3); }
            | Boolean OR Boolean { $$ = ($1 || $3); }
 	   | beg Boolean end { $$ = $2; }
@@ -493,6 +537,26 @@ FExpression : fnumber                       { $$ = $1; }
             | beg FExpression end           { $$ = $2; }
             | minus FExpression %prec neg   { $$ = -$2; }
             | FExpression power FExpression { $$ = pow($1, $3); }
+            | IExpression plus FExpression  { $$ = $1 + $3; }
+            | IExpression minus FExpression { $$ = $1 - $3; }
+            | IExpression over FExpression  { $$ = $1 / $3; }
+            | IExpression times FExpression { $$ = $1 * $3; }
+            | IExpression power FExpression { $$ = pow($1, $3); }
+            | FExpression plus IExpression  { $$ = $1 + $3; }
+            | FExpression minus IExpression { $$ = $1 - $3; }
+            | FExpression over IExpression  { $$ = $1 / $3; }
+            | FExpression times IExpression { $$ = $1 * $3; }
+            | FExpression power IExpression { $$ = pow($1, $3); }
+            ;
+
+IExpression : inumber                       { $$ = $1; }
+            | IExpression plus IExpression  { $$ = $1 + $3; }
+            | IExpression minus IExpression { $$ = $1 - $3; }
+            | IExpression over IExpression  { $$ = $1 / $3; }
+            | IExpression times IExpression { $$ = $1 * $3; }
+            | beg IExpression end           { $$ = $2; }
+            | minus IExpression %prec neg   { $$ = -$2; }
+            | IExpression power IExpression { $$ = pow($1, $3); }
             ;
 %%
 
