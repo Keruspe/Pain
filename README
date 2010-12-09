@@ -1,3 +1,7 @@
 Pain, a minimalist pascal interpreter
 type make to compile
-./pain to execute
+To execute
+./pain [file] [--compile]
+if no file is passed, stdin will be the input
+if --compile is passed, a binary called "./binary" will be created instead of interpreting
+
