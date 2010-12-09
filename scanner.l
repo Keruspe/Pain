@@ -4,7 +4,7 @@ INUMBER {DIGIT}+
 FNUMBER {DIGIT}+\.?{DIGIT}*
 ID [a-zA-Z_][a-zA-Z0-9_-]*
 STRING \"[^\"]*\"
-CHAR \'.\'
+CHAR \'\\?.\'
 %{
 	#include "y.tab.h"
 %}
@@ -43,6 +43,7 @@ CHAR \'.\'
 "real" return(FLOAT);
 "string" return(STRING);
 "boolean" return(BOOLEAN);
+"char" return(CHAR);
 "true"|"True"|"TRUE" return(T);
 "false"|"False"|"FALSE" return(F);
 {INUMBER} {

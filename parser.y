@@ -16,6 +16,7 @@
     } Action;
 
     typedef union {
+        char c;
 	char * s;
 	float f;
 	int i;
@@ -26,7 +27,8 @@
 	STR,
 	FL,
 	INT,
-	BOOL
+	BOOL,
+	CH
     } Type;
 
     typedef struct _Instr Instr;
@@ -95,7 +97,7 @@
 %type  <type> TYPE
 %type  <ccval> ids
 
-%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR INTEGER FLOAT STRING BOOLEAN column T F
+%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR INTEGER FLOAT STRING BOOLEAN CHAR column T F
 %left  AND OR
 %right AFFECT
 %left  plus minus
@@ -155,6 +157,7 @@ TYPE   : INTEGER { $$ = INT; }
        | FLOAT { $$ = FL; }
        | STRING { $$ = STR; }
        | BOOLEAN { $$ = BOOL; }
+       | CHAR { $$ = CH; }
        ;
 
 main   : BEGI stmts THE_END {
@@ -206,6 +209,17 @@ main   : BEGI stmts THE_END {
 					    fprintf(tmp, "\tprintf(\"%s\");\n", (current->value.b) ? "true" : "false");
 					else
 					    printf("%s", (current->value.b) ? "true" : "false");
+					break;
+				case CH:
+					if (compile)
+					{
+						if (current->value.c == '\n')
+							fprintf(tmp, "%c%c", '\\', 'n');
+						else
+							fprintf(tmp, "%c", current->value.c);
+					}
+					else
+						printf("%c", current->value.c);
 					break;
 				}
 			}
@@ -344,6 +358,22 @@ stmt : Print EOL { $$ = $1; }
 		else
 			var->value.s = $3;
 	   }
+     | ID AFFECT Char EOL {
+     		$$ = NULL;
+     		Var * var = getVar($1);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $1);
+			return(1);
+		}
+		else if (var->type != CH)
+		{
+			printf("%s is not a char\n", $1);
+			return(1);
+		}
+		else
+			var->value.c = $3;
+	   }
      | ID AFFECT ID EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
@@ -378,6 +408,9 @@ stmt : Print EOL { $$ = $1; }
 				break;
 			case BOOL:
 				var->value.b = var2->value.b;
+				break;
+			case CH:
+				var->value.c = var2->value.c;
 				break;
 			}
 		}
