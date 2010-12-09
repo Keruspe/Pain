@@ -78,7 +78,7 @@
     }
 %}
 
-%expect 1
+%expect 2
 
 %union { float fval; char * cval; struct _Instr * instr; int bval; int type; char ** ccval; }
 %token <fval> number
@@ -311,7 +311,7 @@ stmt : Print EOL { $$ = $1; }
 		else
 			var->value.s = $3;
 	   }
-     /*| ID AFFECT ID EOL {
+     | ID AFFECT ID EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
 		Var * var2  =  getVar($3);
@@ -348,7 +348,7 @@ stmt : Print EOL { $$ = $1; }
 				break;
 			}
 		}
-	   }*/
+	   }
      ;
 
 Print : print beg Printable end           { $$ = $3; }
