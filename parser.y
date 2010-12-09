@@ -13,14 +13,12 @@
 	NONE
     } Action;
 
-    typedef struct _Instr Instr;
-    struct _Instr {
-	Instr * next;
-	Action action;
-	const char * format;
-	char * svalue;
-	float value;
-    };
+    typedef union {
+	char * s;
+	float f;
+	int i;
+	int b;
+    } Value;
 
     typedef enum {
 	STR,
@@ -29,15 +27,18 @@
 	BOOL
     } Type;
 
+    typedef struct _Instr Instr;
+    struct _Instr {
+	Instr * next;
+	Action action;
+	Type type;
+	Value value;
+    };
+
     typedef struct {
 	char * name;
 	Type type;
-	union {
-		char * s;
-		float f;
-		int i;
-		int b;
-	} value;
+	Value value;
     } Var;
 
     Instr * current = NULL;
@@ -156,12 +157,21 @@ main   : BEGI stmts THE_END {
 		while (current != NULL) {
 			toFree = current;
 			if (current->action == PRINT) {
-				if (current->svalue == NULL)
-					printf(current->format, current->value);
-				else
+				switch (current->type)
 				{
-					printf(current->format, current->svalue);
-					free(current->svalue);
+				case STR:
+					printf("%s", current->value.s);
+					free(current->value.s);
+					break;
+				case FL:
+					printf("%f", current->value.f);
+					break;
+				case INT:
+					printf("%d", current->value.i);
+					break;
+				case BOOL:
+					printf("%s", (current->value.b) ? "true" : "false");
+					break;
 				}
 			}
 			current = current->next;
@@ -224,8 +234,8 @@ stmt : Print EOL { $$ = $1; }
 			{
 				toFree = current;
 				current = current->next;
-				if (toFree->svalue != NULL)
-					free(toFree->svalue);
+				if (toFree->type == STR)
+					free(toFree->value.s);
 				free(toFree);
 			}
 			$$ = NULL;
@@ -246,8 +256,8 @@ stmt : Print EOL { $$ = $1; }
 		while (current != NULL)
 		{
 			toFree = current;
-			if (toFree->svalue != NULL)
-				free(toFree->svalue);
+			if (toFree->type == STR)
+				free(toFree->value.s);
 			current = current->next;
 			free(toFree);
 		}
@@ -341,9 +351,9 @@ Print : print beg Printable end           { $$ = $3; }
       | println beg Printable end         {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
-			new->format = "%s";
-			new->svalue = (char *) malloc(2 * sizeof(char));
-			strcpy(new->svalue, "\n");
+			new->type = STR;
+			new->value.s = (char *) malloc(2 * sizeof(char));
+			strcpy(new->value.s, "\n");
 			new->next = NULL;
 			current = $3;
 			while (current->next != NULL) current = current->next;
@@ -353,9 +363,9 @@ Print : print beg Printable end           { $$ = $3; }
       | println beg end                   {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
-			new->format = "%s";
-			new->svalue = (char *) malloc(2 * sizeof(char));
-			strcpy(new->svalue, "\n");
+			new->type = STR;
+			new->value.s = (char *) malloc(2 * sizeof(char));
+			strcpy(new->value.s, "\n");
 			new->next = NULL;
 			$$ = new;
 	        }
@@ -364,25 +374,24 @@ Print : print beg Printable end           { $$ = $3; }
 Printable : Expression              {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
-			new->format = "%.3f";
-			new->svalue = NULL;
-			new->value = $1;
+			new->value.f = $1;
+			new->type = FL;
 			new->next = NULL;
 			$$ = new;
 		}
           | String                  {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
-			new->format = "%s";
-			new->svalue = $1;
+			new->type = STR;
+			new->value.s = $1;
 			new->next = NULL;
 			$$ = new;
 		}
           | Printable Comma String {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
-			new->format = "%s";
-			new->svalue = $3;
+			new->type = STR;
+			new->value.s = $3;
 			new->next = NULL;
 			current = $1;
 			while (current->next != NULL) current = current->next;
@@ -392,9 +401,8 @@ Printable : Expression              {
           | Printable Comma Expression {
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
-			new->format = "%.3f";
-			new->svalue = NULL;
-			new->value = $3;
+			new->type = FL;
+			new->value.f = $3;
 			new->next = NULL;
 			current = $1;
 			while (current->next != NULL) current = current->next;
