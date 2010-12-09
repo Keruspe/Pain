@@ -1,7 +1,9 @@
+Program test;
 Var
-a,b:real;
-c: integer;
-s:string;
+a,b:real; // YAY a comment !!
+c: integer; /* Yet
+another
+comment */ s:string;
 Begin
 a := 3;
 b:=8.5;

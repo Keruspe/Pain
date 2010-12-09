@@ -9,11 +9,11 @@ STRING \"[^\"]*\"
 %}
 
 %%
-"writeln" return(println);
-"write" return(print);
-"if" return(IF);
-"then" return(THEN);
-"else" return(ELSE);
+"writeln"|"Writeln" return(println);
+"write"|"Write" return(print);
+"if"|"If" return(IF);
+"then"|"Then" return(THEN);
+"else"|"Else" return(ELSE);
 "BEGIN"|"begin"|"Begin" return(BEGI);
 "END"|"end"|"End" return(END);
 "END."|"end."|"End." return(THE_END);
@@ -62,5 +62,8 @@ STRING \"[^\"]*\"
     yylval.cval[yyleng] = '\0';
     return (ID);
 }
+"program"[^\n]*"\n"|"Program"[^\n]*"\n"|"PROGRAM"[^\n]*"\n"; 
+"//"[^\n]*"\n" ; 
+"/\*"[^\*]*"\*/" ;
 {BLANK}+ ;
 . ;
