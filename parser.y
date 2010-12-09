@@ -83,7 +83,7 @@
     }
 %}
 
-%expect 1
+%expect 3
 
 %union { int ival; float fval; char cval; char * sval; struct _Instr * instr; int bval; int type; char ** ccval; }
 %token <cval>  Char
@@ -564,6 +564,18 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
            | IExpression le IExpression { $$ = ($1 <= $3); }
            | IExpression eq IExpression { $$ = ($1 == $3); }
            | IExpression ne IExpression { $$ = ($1 != $3); }
+           | FExpression gt IExpression { $$ = ($1 > $3); }
+	   | FExpression ge IExpression { $$ = ($1 >= $3); }
+           | FExpression lt IExpression { $$ = ($1 < $3); }
+           | FExpression le IExpression { $$ = ($1 <= $3); }
+           | FExpression eq IExpression { $$ = ($1 == $3); }
+           | FExpression ne IExpression { $$ = ($1 != $3); }
+           | IExpression gt FExpression { $$ = ($1 > $3); }
+	   | IExpression ge FExpression { $$ = ($1 >= $3); }
+           | IExpression lt FExpression { $$ = ($1 < $3); }
+           | IExpression le FExpression { $$ = ($1 <= $3); }
+           | IExpression eq FExpression { $$ = ($1 == $3); }
+           | IExpression ne FExpression { $$ = ($1 != $3); }
            | Boolean AND Boolean { $$ = ($1 && $3); }
            | Boolean OR Boolean { $$ = ($1 || $3); }
 	   | beg Boolean end { $$ = $2; }
@@ -587,6 +599,21 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		else
 			$$ = var->value.b;
 	        }*/
+           | not ID {
+     		Var * var = getVar($2);
+		if (var == NULL)
+		{
+			printf("No such var: %s\n", $2);
+			return(1);
+		}
+		else if (var->type != BOOL)
+		{
+			printf("%s is not a boolean\n", $2);
+			return(1);
+		}
+		else
+			$$ = !(var->value.b);
+	        }
 	   | ID gt ID {
 	   		Var * var = getVar($1);
 			if (var == NULL)
