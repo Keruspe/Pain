@@ -2,3 +2,6 @@ parser.c
 y.tab.h
 scanner.c
 pain
+test.p
+binary
+

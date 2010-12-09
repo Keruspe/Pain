@@ -26,4 +26,4 @@ parse.o: parser.y
 scan.o: scanner.l parser.c y.tab.h
 
 clean:
-	$(RM) $(sources) $(objects) $(bin) y.tab.h
+	$(RM) $(sources) $(objects) $(bin) y.tab.h binary

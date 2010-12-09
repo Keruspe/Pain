@@ -2,6 +2,7 @@
     #include <stdio.h>
     #include <stdlib.h>
     #include <string.h>
+    #include <unistd.h>
     #include <math.h>
     void yyerror(char* error);
     extern int yylex (void);
@@ -49,6 +50,7 @@
     int var_names_number = 0;
     Var * vars = NULL;
     int vars_number = 0;
+    int compile = 0;
 
     int varNameExists(char * name)
     {
@@ -155,55 +157,64 @@ TYPE   : INTEGER { $$ = INT; }
 main   : BEGI stmts THE_END {
 		Instr * toFree;
 		current = $2;
+		FILE * tmp = NULL;
+		if (compile)
+		{
+			tmp = fopen("/tmp/.pascal.c", "w");
+			fprintf(tmp, "#include <stdio.h>\nint\nmain()\n{\n");
+		}
 		while (current != NULL) {
 			toFree = current;
 			if (current->action == PRINT) {
 				switch (current->type)
 				{
 				case STR:
-					printf("%s", current->value.s);
+					if (compile)
+					{
+					    fprintf(tmp, "\tprintf(\"");
+					    unsigned int i;
+					    for (i = 0 ; i<(strlen(current->value.s)) ; ++i)
+					    {
+						if (current->value.s[i] == '\n')
+							fprintf(tmp, "%c%c", '\\', 'n');
+						else
+							fprintf(tmp, "%c", current->value.s[i]);
+					    }
+					    fprintf(tmp, "\");\n");
+					}
+					else
+					    printf("%s", current->value.s);
 					free(current->value.s);
 					break;
 				case FL:
-					printf("%f", current->value.f);
+				        if (compile)
+					    fprintf(tmp, "\tprintf(\"%f\");\n", current->value.f);
+					else
+					    printf("%f", current->value.f);
 					break;
 				case INT:
-					printf("%d", current->value.i);
+					if (compile)
+					    fprintf(tmp, "\tprintf(\"%d\");\n", current->value.i);
+					else
+					    printf("%d", current->value.i);
 					break;
 				case BOOL:
-					printf("%s", (current->value.b) ? "true" : "false");
+					if (compile)
+					    fprintf(tmp, "\tprintf(\"%s\");\n", (current->value.b) ? "true" : "false");
+					else
+					    printf("%s", (current->value.b) ? "true" : "false");
 					break;
 				}
 			}
 			current = current->next;
 			free(toFree);
 		}
-		int i;
-		Var var;
-		printf("\nVars:\n");
-		for (i = 0 ; i < vars_number ; ++i)
-		{
-			var = vars[i];
-			printf("%s: ", var.name);
-			free(var.name);
-			switch (var.type)
-			{
-			case INT:
-				printf("int");
-				break;
-			case FL:
-				printf("float");
-				break;
-			case STR:
-				printf("string");
-				break;
-			case BOOL:
-				printf("bool");
-				break;
-			}
-			printf("\n");
-		}
 		free(vars);
+		if (compile)
+		{
+			fprintf(tmp, "\treturn 0;\n}\n");
+			fclose(tmp);
+		}
 		return(0);
 	   }
       | BEGI THE_END { return(0);}
@@ -491,12 +502,35 @@ void yyerror(char * error) {
 }
 
 int main(int argc, char ** argv) {
-    ++argv; --argc;
-    if (argc > 0)
-    	yyin = fopen(argv[0], "r");
-    else
-        yyin = stdin;
+    switch(argc) {
+    case 1: 
+        break;
+    case 2:
+    	if (strcmp(argv[1], "--compile") == 0)
+	    compile = 1;
+	else
+    	    yyin = fopen(argv[1], "r");
+	break;
+    case 3:
+    	if (strcmp(argv[1], "--compile") == 0)
+	{
+	    compile = 1;
+	    yyin = fopen(argv[2], "r");
+	}
+	else
+	{
+    	    yyin = fopen(argv[1], "r");
+    	    if (strcmp(argv[2], "--compile") == 0)
+	        compile = 1;
+	}
+	break;
+    }
     yyparse();
     yylex_destroy();
+    if (compile)
+    {
+	printf("Compiling your program to ./binary\n");
+    	execl("/usr/bin/gcc", "/usr/bin/gcc", "/tmp/.pascal.c", "-o", "./binary", NULL);
+    }
     return(0);
 }
