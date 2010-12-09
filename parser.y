@@ -97,9 +97,9 @@
 %type  <type> TYPE
 %type  <ccval> ids
 
-%token equals beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le eq ne VAR INTEGER FLOAT STRING BOOLEAN CHAR column T F
-%left  AND OR
 %right AFFECT
+%token beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le VAR INTEGER FLOAT STRING BOOLEAN CHAR column T F
+%left  AND OR eq ne
 %left  plus minus
 %left  times over
 %left  neg
@@ -377,7 +377,7 @@ stmt : Print EOL { $$ = $1; }
      | ID AFFECT ID EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
-		Var * var2  =  getVar($3);
+		Var * var2 = getVar($3);
 		if (var == NULL)
 		{
 			printf("No such var: %s\n", $1);
@@ -563,6 +563,8 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		else
 			$$ = var->value.b;
 	        }
+	   | Boolean eq Boolean { $$ = ($1 == $3); }
+	   | Boolean ne Boolean { $$ = ($1 != $3); }
 	   ;
 
 FExpression : fnumber                       { $$ = $1; }

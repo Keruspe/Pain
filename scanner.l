@@ -25,12 +25,11 @@ CHAR \'\\?.\'
 "-" return(minus);
 "*" return(times);
 "/" return(over);
-"="  return(equals);
 "(" return(beg);
 ")" return(end);
 "^" return(power);
 "&" return(AND);
-"==" return(eq);
+"="  return(eq);
 "!=" return(ne);
 "|" return(OR);
 ">" return(gt);
