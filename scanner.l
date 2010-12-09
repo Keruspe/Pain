@@ -39,11 +39,11 @@ CHAR \'\\?.\'
 "<=" return(le);
 ":=" return(AFFECT);
 ":" return(column);
-"integer" return(INTEGER);
-"real" return(FLOAT);
-"string" return(STRING);
-"boolean" return(BOOLEAN);
-"char" return(CHAR);
+"integer"|"Integer" return(INTEGER);
+"real"|"Real" return(FLOAT);
+"string"|"String" return(STRING);
+"boolean"|"Boolean" return(BOOLEAN);
+"char"|"Char" return(CHAR);
 "true"|"True"|"TRUE" return(T);
 "false"|"False"|"FALSE" return(F);
 {INUMBER} {
