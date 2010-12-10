@@ -14,7 +14,7 @@ s := "yay";
 writeln(s, " ", a);
 a := b;
 writeln(b, " ", c, "yeepee");
-if test = False then
+if ( !test ) then
         writeln("youhou");
 End.
 
