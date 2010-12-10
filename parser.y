@@ -79,7 +79,10 @@
 		if (strcmp(var->name, id) == 0)
 			return var;
 	}
-	return NULL;
+	char * error = (char *) malloc((15 + strlen(id)) * sizeof(char));
+	sprintf(error, "%s doesn't exist", id);
+	yyerror(error);
+	return NULL; //silent warning
     }
 %}
 
@@ -295,12 +298,7 @@ stmt : Print EOL { $$ = $1; }
      | ID AFFECT FExpression EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $1);
-			return(1);
-		}
-		else if (var->type != FL)
+		if (var->type != FL)
 		{
 			printf("%s is not a real\n", $1);
 			return(1);
@@ -311,12 +309,7 @@ stmt : Print EOL { $$ = $1; }
      | ID AFFECT IExpression EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $1);
-			return(1);
-		}
-		else if (var->type != INT && var->type != FL)
+		if (var->type != INT && var->type != FL)
 		{
 			printf("%s is not an int nor a real\n", $1);
 			return(1);
@@ -329,12 +322,7 @@ stmt : Print EOL { $$ = $1; }
      | ID AFFECT Boolean EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $1);
-			return(1);
-		}
-		else if (var->type != BOOL)
+		if (var->type != BOOL)
 		{
 			printf("%s is not a boolean\n", $1);
 			return(1);
@@ -345,12 +333,7 @@ stmt : Print EOL { $$ = $1; }
      | ID AFFECT String EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $1);
-			return(1);
-		}
-		else if (var->type != STR)
+		if (var->type != STR)
 		{
 			printf("%s is not a string\n", $1);
 			return(1);
@@ -361,12 +344,7 @@ stmt : Print EOL { $$ = $1; }
      | ID AFFECT Char EOL {
      		$$ = NULL;
      		Var * var = getVar($1);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $1);
-			return(1);
-		}
-		else if (var->type != CH)
+		if (var->type != CH)
 		{
 			printf("%s is not a char\n", $1);
 			return(1);
@@ -378,17 +356,7 @@ stmt : Print EOL { $$ = $1; }
      		$$ = NULL;
      		Var * var = getVar($1);
 		Var * var2 = getVar($3);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $1);
-			return(1);
-		} 
-		else if (var2 == NULL)
-		{
-			printf("No such var: %s\n", $3);
-			return(1);
-		}
-		else if (var->type != var2->type)
+		if (var->type != var2->type)
 		{
 			printf("%s and %s have not the same type\n", $1, $3);
 			return(1);
@@ -476,11 +444,6 @@ Printable : FExpression              {
 	      }
           | ID                 {
 	  		Var * var = getVar($1);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $1);
-				return(1);
-			}
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->type = var->type;
@@ -535,11 +498,6 @@ Printable : FExpression              {
 	      }
           | Printable Comma ID {
 	  		Var * var = getVar($3);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $3);
-				return(1);
-			}
 	  		new = (Instr *) malloc(sizeof(Instr));
 			new->action = PRINT;
 			new->type = var->type;
@@ -586,12 +544,7 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 	   | Boolean ne Boolean { $$ = ($1 != $3); }
            | beg ID end {
      		Var * var = getVar($2);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $2);
-			return(1);
-		}
-		else if (var->type != BOOL)
+		if (var->type != BOOL)
 		{
 			printf("%s is not a boolean\n", $2);
 			return(1);
@@ -601,12 +554,7 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 	        }
            | beg not ID end {
      		Var * var = getVar($3);
-		if (var == NULL)
-		{
-			printf("No such var: %s\n", $3);
-			return(1);
-		}
-		else if (var->type != BOOL)
+		if (var->type != BOOL)
 		{
 			printf("%s is not a boolean\n", $3);
 			return(1);
@@ -616,22 +564,12 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 	        }
 	   | ID gt ID {
 	   		Var * var = getVar($1);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $1);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var2 == NULL)
-			{
-				printf("No such var: %s\n", $3);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
@@ -641,22 +579,12 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		}
 	   | ID ge ID {
 	   		Var * var = getVar($1);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $1);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var2 == NULL)
-			{
-				printf("No such var: %s\n", $3);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
@@ -666,22 +594,12 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		}
 	   | ID lt ID {
 	   		Var * var = getVar($1);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $1);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var2 == NULL)
-			{
-				printf("No such var: %s\n", $3);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
@@ -691,22 +609,12 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		}
 	   | ID le ID {
 	   		Var * var = getVar($1);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $1);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var2 == NULL)
-			{
-				printf("No such var: %s\n", $3);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
@@ -716,22 +624,12 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		}
 	   | ID eq ID {
 	   		Var * var = getVar($1);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $1);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var2 == NULL)
-			{
-				printf("No such var: %s\n", $3);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
@@ -741,22 +639,12 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 		}
 	   | ID ne ID {
 	   		Var * var = getVar($1);
-			if (var == NULL)
-			{
-				printf("No such var: %s\n", $1);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var2 == NULL)
-			{
-				printf("No such var: %s\n", $3);
-				return(1);
-			}
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
@@ -798,7 +686,7 @@ IExpression : inumber                       { $$ = $1; }
 %%
 
 void yyerror(char * error) {
-    fprintf(stderr, "Erreur : %s\n", error);
+    fprintf(stderr, "Error : %s\n", error);
     yylex_destroy();
     exit(1);
 }
