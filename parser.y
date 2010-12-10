@@ -94,15 +94,15 @@
 %token <ival> inumber
 %token <sval> String ID
 %type  <ival> IExpression
-%type  <fval> FExpression vars var
+%type  <fval> FExpression vars var Number
 %type  <bval> Boolean
 %type  <instr> Print Printable stmt stmts main OUT
 %type  <type> TYPE
 %type  <ccval> ids
 
 %right AFFECT
-%token beg end print println EOL Comma IF THEN ELSE BEGI END THE_END gt ge lt le VAR INTEGER FLOAT STRING BOOLEAN CHAR column T F
-%left  AND OR eq ne
+%token beg end print println EOL Comma IF THEN ELSE BEGI END THE_END VAR INTEGER FLOAT STRING BOOLEAN CHAR column T F
+%left  AND OR eq ne gt ge lt le
 %left  plus minus
 %left  times over
 %left  neg not
@@ -510,6 +510,9 @@ Printable : FExpression              {
 		}
           ;
 
+Number : FExpression { $$ = $1; }
+       | IExpression { $$ = $1+0.; }
+
 Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
            | FExpression ge FExpression { $$ = ($1 >= $3); }
            | FExpression lt FExpression { $$ = ($1 < $3); }
@@ -570,12 +573,21 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var->type != FL && var->type != INT)
+			if (var2->type != FL && var2->type != INT)
 			{
-				printf("%s is not a real nor an integer\n", $1);
+				printf("%s is not a real nor an integer\n", $3);
 				return(1);
 			}
-			$$ = ($1 > $3);
+			float f,g;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			if (var2->type == FL)
+				g = var2->value.f;
+			else
+				g = var2->value.i+0.;
+			$$ = (f > g);
 		}
 	   | ID ge ID {
 	   		Var * var = getVar($1);
@@ -585,12 +597,21 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var->type != FL && var->type != INT)
+			if (var2->type != FL && var2->type != INT)
 			{
-				printf("%s is not a real nor an integer\n", $1);
+				printf("%s is not a real nor an integer\n", $3);
 				return(1);
 			}
-			$$ = ($1 >= $3);
+			float f,g;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			if (var2->type == FL)
+				g = var2->value.f;
+			else
+				g = var2->value.i+0.;
+			$$ = (f >= g);
 		}
 	   | ID lt ID {
 	   		Var * var = getVar($1);
@@ -600,12 +621,21 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var->type != FL && var->type != INT)
+			if (var2->type != FL && var2->type != INT)
 			{
-				printf("%s is not a real nor an integer\n", $1);
+				printf("%s is not a real nor an integer\n", $3);
 				return(1);
 			}
-			$$ = ($1 < $3);
+			float f,g;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			if (var2->type == FL)
+				g = var2->value.f;
+			else
+				g = var2->value.i+0.;
+			$$ = (f < g);
 		}
 	   | ID le ID {
 	   		Var * var = getVar($1);
@@ -615,12 +645,21 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var->type != FL && var->type != INT)
+			if (var2->type != FL && var2->type != INT)
 			{
-				printf("%s is not a real nor an integer\n", $1);
+				printf("%s is not a real nor an integer\n", $3);
 				return(1);
 			}
-			$$ = ($1 <= $3);
+			float f,g;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			if (var2->type == FL)
+				g = var2->value.f;
+			else
+				g = var2->value.i+0.;
+			$$ = (f <= g);
 		}
 	   | ID eq ID {
 	   		Var * var = getVar($1);
@@ -630,12 +669,21 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 				return(1);
 			}
 			Var * var2 = getVar($3);
-			if (var->type != FL && var->type != INT)
+			if (var2->type != FL && var2->type != INT)
 			{
-				printf("%s is not a real nor an integer\n", $1);
+				printf("%s is not a real nor an integer\n", $3);
 				return(1);
 			}
-			$$ = ($1 == $3);
+			float f,g;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			if (var2->type == FL)
+				g = var2->value.f;
+			else
+				g = var2->value.i+0.;
+			$$ = (f == g);
 		}
 	   | ID ne ID {
 	   		Var * var = getVar($1);
@@ -645,13 +693,190 @@ Boolean    : FExpression gt FExpression { $$ = ($1 > $3); }
 				return(1);
 			}
 			Var * var2 = getVar($3);
+			if (var2->type != FL && var2->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $3);
+				return(1);
+			}
+			float f,g;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			if (var2->type == FL)
+				g = var2->value.f;
+			else
+				g = var2->value.i+0.;
+			$$ = (f != g);
+		}
+	   | ID gt Number {
+	   		Var * var = getVar($1);
 			if (var->type != FL && var->type != INT)
 			{
 				printf("%s is not a real nor an integer\n", $1);
 				return(1);
 			}
-			$$ = ($1 != $3);
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f>$3);
 		}
+	   | ID ge Number {
+	   		Var * var = getVar($1);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f>=$3);
+		}
+	   | ID lt Number {
+	   		Var * var = getVar($1);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f<$3);
+		}
+	   | ID le Number {
+	   		Var * var = getVar($1);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f<=$3);
+		}
+	   | ID eq Number {
+	   		Var * var = getVar($1);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f==$3);
+		}
+	   | ID ne Number {
+	   		Var * var = getVar($1);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $1);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f!=$3);
+		}
+	   /*| Number gt ID {
+	   		Var * var = getVar($3);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $3);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = ($1>f);
+		}
+	   | Number ge ID {
+	   		Var * var = getVar($3);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $3);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = ($1>=f);
+		}
+	   | Number lt ID {
+	   		Var * var = getVar($3);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $3);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = ($1<f);
+		}
+	   | Number le ID {
+	   		Var * var = getVar($3);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $3);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = ($1<=f);
+		}
+	   | Number eq ID {
+	   		Var * var = getVar($3);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $3);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f==$1);
+		}
+	   | Number ne ID {
+	   		Var * var = getVar($3);
+			if (var->type != FL && var->type != INT)
+			{
+				printf("%s is not a real nor an integer\n", $3);
+				return(1);
+			}
+			float f;
+			if (var->type == FL)
+				f = var->value.f;
+			else
+				f = var->value.i+0.;
+			$$ = (f!=$1);
+		}*/
 	   ;
 
 FExpression : fnumber                       { $$ = $1; }
