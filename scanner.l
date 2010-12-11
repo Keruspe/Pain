@@ -6,7 +6,7 @@ ID [a-zA-Z_][a-zA-Z0-9_-]*
 STRING \"[^\"]*\"
 CHAR \'\\?.\'
 %{
-	#include "y.tab.h"
+    #include "y.tab.h"
 %}
 
 %%
@@ -70,8 +70,8 @@ CHAR \'\\?.\'
     yylval.sval[yyleng] = '\0';
     return (ID);
 }
-"program"[^\n]*"\n"|"Program"[^\n]*"\n"|"PROGRAM"[^\n]*"\n"; 
-"//"[^\n]*"\n" ; 
+"program"[^\n]*"\n"|"Program"[^\n]*"\n"|"PROGRAM"[^\n]*"\n";
+"//"[^\n]*"\n" ;
 "/\*"[^\*]*"\*/" ;
 {BLANK}+ ;
 . ;
