@@ -54,7 +54,8 @@
     int vars_number = 0;
     int compile = 0;
 
-    int varNameExists(char * name)
+    int
+    varNameExists(char * name)
     {
         int i;
         for (i = 0 ; i < var_names_number ; ++i)
@@ -70,7 +71,8 @@
         return 0;
     }
 
-    Var * getVar(char * id) {
+    Var *
+    getVar(char * id) {
         int i;
         Var * var;
         for (i=0 ; i < vars_number ; ++i)
@@ -84,20 +86,98 @@
         yyerror(error);
         return NULL; //silent warning
     }
+
+    void
+    execute(Instr * start)
+    {
+        current = start;
+        Instr * toFree;
+        FILE * tmp = NULL;
+        if (compile)
+        {
+            tmp = fopen("/tmp/.pascal.c", "w");
+            fprintf(tmp, "#include <stdio.h>\nint\nmain()\n{\n");
+        }
+        while (current != NULL)
+        {
+            toFree = current;
+            if (current->action == PRINT)
+            {
+                switch (current->type)
+                {
+                case STR:
+                    if (compile)
+                    {
+                        fprintf(tmp, "\tprintf(\"");
+                        unsigned int i;
+                        for (i = 0 ; i<(strlen(current->value.s)) ; ++i)
+                        {
+                            if (current->value.s[i] == '\n')
+                                fprintf(tmp, "%c%c", '\\', 'n');
+                            else
+                                fprintf(tmp, "%c", current->value.s[i]);
+                        }
+                        fprintf(tmp, "\");\n");
+                    }
+                    else
+                        printf("%s", current->value.s);
+                    free(current->value.s);
+                    break;
+                case FL:
+                    if (compile)
+                        fprintf(tmp, "\tprintf(\"%f\");\n", current->value.f);
+                    else
+                        printf("%f", current->value.f);
+                    break;
+                case INT:
+                    if (compile)
+                        fprintf(tmp, "\tprintf(\"%d\");\n", current->value.i);
+                    else
+                        printf("%d", current->value.i);
+                    break;
+                case BOOL:
+                    if (compile)
+                        fprintf(tmp, "\tprintf(\"%s\");\n", (current->value.b) ? "true" : "false");
+                    else
+                        printf("%s", (current->value.b) ? "true" : "false");
+                    break;
+                case CH:
+                    if (compile)
+                    {
+                        if (current->value.c == '\n')
+                            fprintf(tmp, "%c%c", '\\', 'n');
+                        else
+                            fprintf(tmp, "%c", current->value.c);
+                    }
+                    else
+                        printf("%c", current->value.c);
+                    break;
+                }
+            }
+            current = current->next;
+            free(toFree);
+        }
+        free(vars);
+        if (compile)
+        {
+            fprintf(tmp, "\treturn 0;\n}\n");
+            fclose(tmp);
+        }
+    }
 %}
 
 %expect 1
 
 %union { int ival; float fval; char cval; char * sval; struct _Instr * instr; int bval; int type; char ** ccval; }
 %token <cval>  Char
-%token <fval> fnumber
-%token <ival> inumber
-%token <sval> String ID
-%type  <ival> IExpression
-%type  <fval> FExpression vars var Number
-%type  <bval> Boolean
-%type  <instr> Print Printable stmt stmts main OUT
-%type  <type> TYPE
+%token <fval>  fnumber
+%token <ival>  inumber
+%token <sval>  String ID
+%type  <ival>  IExpression
+%type  <fval>  FExpression Number
+%type  <bval>  Boolean
+%type  <instr> Print Printable stmt stmts
+%type  <type>  TYPE
 %type  <ccval> ids
 
 %right AFFECT
@@ -112,13 +192,13 @@
 
 %%
 
-OUT    : main
-       | VAR vars main { $$ = NULL; }
-       ;
+OUT : main
+    | VAR vars main
+    ;
 
-vars   : var
-       | vars var
-       ;
+vars : var
+     | vars var
+     ;
 
 var : ids column TYPE EOL
       {
@@ -166,84 +246,8 @@ TYPE : INTEGER { $$ = INT; }
      | CHAR    { $$ = CH; }
      ;
 
-main : BEGI stmts THE_END
-       {
-           Instr * toFree;
-           current = $2;
-           FILE * tmp = NULL;
-           if (compile)
-           {
-               tmp = fopen("/tmp/.pascal.c", "w");
-               fprintf(tmp, "#include <stdio.h>\nint\nmain()\n{\n");
-           }
-           while (current != NULL)
-           {
-               toFree = current;
-               if (current->action == PRINT)
-               {
-                   switch (current->type)
-                   {
-                   case STR:
-                       if (compile)
-                       {
-                           fprintf(tmp, "\tprintf(\"");
-                           unsigned int i;
-                           for (i = 0 ; i<(strlen(current->value.s)) ; ++i)
-                           {
-                               if (current->value.s[i] == '\n')
-                                   fprintf(tmp, "%c%c", '\\', 'n');
-                               else
-                                   fprintf(tmp, "%c", current->value.s[i]);
-                           }
-                           fprintf(tmp, "\");\n");
-                       }
-                       else
-                           printf("%s", current->value.s);
-                       free(current->value.s);
-                       break;
-                   case FL:
-                       if (compile)
-                           fprintf(tmp, "\tprintf(\"%f\");\n", current->value.f);
-                       else
-                           printf("%f", current->value.f);
-                       break;
-                   case INT:
-                       if (compile)
-                           fprintf(tmp, "\tprintf(\"%d\");\n", current->value.i);
-                       else
-                           printf("%d", current->value.i);
-                       break;
-                   case BOOL:
-                       if (compile)
-                           fprintf(tmp, "\tprintf(\"%s\");\n", (current->value.b) ? "true" : "false");
-                       else
-                           printf("%s", (current->value.b) ? "true" : "false");
-                       break;
-                   case CH:
-                       if (compile)
-                       {
-                           if (current->value.c == '\n')
-                               fprintf(tmp, "%c%c", '\\', 'n');
-                           else
-                               fprintf(tmp, "%c", current->value.c);
-                       }
-                       else
-                           printf("%c", current->value.c);
-                       break;
-                   }
-               }
-               current = current->next;
-               free(toFree);
-           }
-           free(vars);
-           if (compile)
-           {
-               fprintf(tmp, "\treturn 0;\n}\n");
-               fclose(tmp);
-           }
-           return(0);
-       }
-     | BEGI THE_END { return(0);}
+main : BEGI stmts THE_END { execute($2); }
+     | BEGI THE_END
      ;
 
 stmts : stmt { $$ = $1; }
