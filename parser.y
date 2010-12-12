@@ -81,9 +81,8 @@
             if (strcmp(var->name, id) == 0)
                 return var;
         }
-        char * error = (char *) malloc((15 + strlen(id)) * sizeof(char));
-        sprintf(error, "%s doesn't exist", id);
-        yyerror(error);
+        fprintf(stderr, "%s doesn't exist", id);
+        yyerror("exiting");
         return NULL; //silent warning
     }
 
@@ -222,8 +221,8 @@ ids : ID
       {
           if (varNameExists($1) == 1)
           {
-              printf("%s already exists !\n", $1);
-              return(1);
+              fprintf(stderr, "%s already exists !\n", $1);
+              yyerror("exiting");
           }
           if ((var_names_number % 10) == 0)
               var_names = (char **) realloc(var_names, (10 + var_names_number) * sizeof(char *));
@@ -315,8 +314,8 @@ stmt : Print EOL { $$ = $1; }
            Var * var = getVar($1);
            if (var->type != FL)
            {
-               printf("%s is not a real\n", $1);
-               return(1);
+               fprintf(stderr, "%s is not a real\n", $1);
+               yyerror("exiting");
            }
            else
                var->value.f = $3;
@@ -327,8 +326,8 @@ stmt : Print EOL { $$ = $1; }
            Var * var = getVar($1);
            if (var->type != INT && var->type != FL)
            {
-               printf("%s is not an int nor a real\n", $1);
-               return(1);
+               fprintf(stderr, "%s is not an int nor a real\n", $1);
+               yyerror("exiting");
            }
            else if (var->type == FL)
                var->value.f = $3+0.;
@@ -341,8 +340,8 @@ stmt : Print EOL { $$ = $1; }
            Var * var = getVar($1);
            if (var->type != BOOL)
            {
-               printf("%s is not a boolean\n", $1);
-               return(1);
+               fprintf(stderr, "%s is not a boolean\n", $1);
+               yyerror("exiting");
            }
            else
                var->value.b = $3;
@@ -353,8 +352,8 @@ stmt : Print EOL { $$ = $1; }
            Var * var = getVar($1);
            if (var->type != STR)
            {
-               printf("%s is not a string\n", $1);
-               return(1);
+               fprintf(stderr, "%s is not a string\n", $1);
+               yyerror("exiting");
            }
            else
                var->value.s = $3;
@@ -365,8 +364,8 @@ stmt : Print EOL { $$ = $1; }
            Var * var = getVar($1);
            if (var->type != CH)
            {
-               printf("%s is not a char\n", $1);
-               return(1);
+               fprintf(stderr, "%s is not a char\n", $1);
+               yyerror("exiting");
            }
            else
                var->value.c = $3;
@@ -378,8 +377,8 @@ stmt : Print EOL { $$ = $1; }
            Var * var2 = getVar($3);
            if (var->type != var2->type)
            {
-               printf("%s and %s have not the same type\n", $1, $3);
-               return(1);
+               fprintf(stderr, "%s and %s have not the same type\n", $1, $3);
+               yyerror("exiting");
            }
            else
            {
@@ -587,8 +586,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($2);
               if (var->type != BOOL)
               {
-                  printf("%s is not a boolean\n", $2);
-                  return(1);
+                  fprintf(stderr, "%s is not a boolean\n", $2);
+                  yyerror("exiting");
               }
               else
                   $$ = var->value.b;
@@ -598,8 +597,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($3);
               if (var->type != BOOL)
               {
-                  printf("%s is not a boolean\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a boolean\n", $3);
+                  fprintf(stderr, "exiting");
               }
               else
                   $$ = !(var->value.b);
@@ -609,14 +608,14 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               Var * var2 = getVar($3);
               if (var2->type != FL && var2->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f,g;
               if (var->type == FL)
@@ -634,14 +633,14 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               Var * var2 = getVar($3);
               if (var2->type != FL && var2->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f,g;
               if (var->type == FL)
@@ -659,14 +658,14 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               Var * var2 = getVar($3);
               if (var2->type != FL && var2->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f,g;
               if (var->type == FL)
@@ -684,14 +683,14 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               Var * var2 = getVar($3);
               if (var2->type != FL && var2->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f,g;
               if (var->type == FL)
@@ -709,14 +708,14 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               Var * var2 = getVar($3);
               if (var2->type != FL && var2->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f,g;
               if (var->type == FL)
@@ -734,14 +733,14 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               Var * var2 = getVar($3);
               if (var2->type != FL && var2->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f,g;
               if (var->type == FL)
@@ -759,8 +758,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -774,8 +773,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -789,8 +788,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -804,8 +803,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -819,8 +818,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -834,8 +833,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($1);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $1);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $1);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -849,8 +848,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($3);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -864,8 +863,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($3);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -879,8 +878,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($3);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -894,8 +893,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($3);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -909,8 +908,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($3);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -924,8 +923,8 @@ Boolean : FExpression gt FExpression { $$ = ($1 > $3); }
               Var * var = getVar($3);
               if (var->type != FL && var->type != INT)
               {
-                  printf("%s is not a real nor an integer\n", $3);
-                  return(1);
+                  fprintf(stderr, "%s is not a real nor an integer\n", $3);
+                  yyerror("exiting");
               }
               float f;
               if (var->type == FL)
@@ -972,7 +971,7 @@ yyerror(char * error)
 {
     fprintf(stderr, "Error : %s\n", error);
     yylex_destroy();
-    exit(1);
+    exit (1);
 }
 
 int

@@ -16,5 +16,12 @@ a := b;
 writeln(b, " ", c, "yeepee");
 if ( !test ) then
         writeln("youhou");
+if (a < 3) then
+Begin
+	writeln("if");
+	a := 4;
+End
+else
+	writeln("else");	
 End.
 
